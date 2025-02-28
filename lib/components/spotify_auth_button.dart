@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
@@ -38,9 +39,17 @@ class SpotifyAuthButton extends StatelessWidget {
     try {
       _showLoadingIndicator(context);
 
-      // start the Spotify authentication flow using flutter_web_auth package
+      // get current userId Firebase Id token
+      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+
+      // encode the userToken token to send to the server - only if it's not null otherwise runtime error
+      final encodedUserToken = userToken != null
+          ? Uri.encodeComponent(userToken)
+          : throw Exception('User token not available');
+
+      // start the Spotify authentication flow using flutter_web_auth package, passsing userToken as query parameter
       final result = await FlutterWebAuth2.authenticate(
-        url: '$serverUrl/spotify/login',
+        url: '$serverUrl/spotify/login?token=$encodedUserToken',
         callbackUrlScheme:
             "spotifyauth", // this should match the callbackUrlScheme in the server - custom url scheme
       );
