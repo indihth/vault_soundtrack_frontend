@@ -1,11 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import '../utils/constants.dart';
+import '../services/spotify_service.dart';
 
 class SpotifyAuthButton extends StatelessWidget {
-  // server endpoint url
-  final String serverUrl =
-      "http://10.0.2.2:3050/api"; // 10.0.2.2 instead of 'localhost' for Android emulator to access physical machine
   final VoidCallback onAuthSuccess;
 
   const SpotifyAuthButton({super.key, required this.onAuthSuccess});
@@ -20,7 +19,7 @@ class SpotifyAuthButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
         ),
       ),
-      onPressed: () => _startAuthFlow(context),
+      onPressed: () => SpotifyService.startAuthFlow(context, onAuthSuccess),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -30,67 +29,6 @@ class SpotifyAuthButton extends StatelessWidget {
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ],
-      ),
-    );
-  }
-
-  // _ naming convention indicates a private function only accessible within this file
-  Future<void> _startAuthFlow(BuildContext context) async {
-    try {
-      _showLoadingIndicator(context);
-
-      // get current userId Firebase Id token
-      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-
-      // encode the userToken token to send to the server - only if it's not null otherwise runtime error
-      final encodedUserToken = userToken != null
-          ? Uri.encodeComponent(userToken)
-          : throw Exception('User token not available');
-
-      // start the Spotify authentication flow using flutter_web_auth package, passsing userToken as query parameter
-      final result = await FlutterWebAuth2.authenticate(
-        url: '$serverUrl/spotify/login?token=$encodedUserToken',
-        callbackUrlScheme:
-            "spotifyauth", // this should match the callbackUrlScheme in the server - custom url scheme
-      );
-
-// hide loading indicator
-      Navigator.of(context, rootNavigator: true).pop();
-
-      // if authentication was successful
-      // browser will auto close when redirected to callbackUrlScheme
-      onAuthSuccess();
-
-      // success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Successfully connected to Spotify!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-// hide loading indicator if it's showing
-      if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-
-      // Authentication was canceled or failed
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to connect to Spotify: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      print('Failed to connect to Spotify: ${e.toString()}');
-    }
-  }
-
-  void _showLoadingIndicator(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
       ),
     );
   }

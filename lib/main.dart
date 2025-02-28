@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
 import 'package:vault_soundtrack_frontend/firebase_options.dart';
+import 'package:vault_soundtrack_frontend/pages/listening_history_page.dart';
 import 'package:vault_soundtrack_frontend/theme/light_mode.dart';
 import 'package:vault_soundtrack_frontend/theme/dark_mode.dart';
 
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
       theme: lightMode,
       darkTheme: darkMode,
       debugShowCheckedModeBanner: false,
-      home: AuthPage(),
+      home: ListeningHistoryPage(),
+      // home: AuthPage(),
     );
   }
 }
