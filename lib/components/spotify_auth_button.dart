@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import '../utils/constants.dart';
-import '../services/spotify_service.dart';
+import '../services/spotify_services.dart';
 
 class SpotifyAuthButton extends StatelessWidget {
   final VoidCallback onAuthSuccess;
@@ -19,7 +19,7 @@ class SpotifyAuthButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
         ),
       ),
-      onPressed: () => SpotifyService.startAuthFlow(context, onAuthSuccess),
+      onPressed: () => SpotifyServices.startAuthFlow(context, onAuthSuccess),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -3,7 +3,7 @@ import 'package:intl/intl.dart'; // Import for date formatting
 
 // Import local models and services
 import '../models/listening_history_item.dart';
-import '../services/spotify_service.dart';
+import '../services/spotify_services.dart';
 
 /// ListeningHistoryPage: A StatefulWidget that displays the user's listening history
 /// This is the main screen that shows all songs the user has played
@@ -32,7 +32,7 @@ class _ListeningHistoryPageState extends State<ListeningHistoryPage> {
   void _loadListeningHistory() {
     setState(() {
       // Call the service to get listening history and update the future
-      _listeningHistoryFuture = SpotifyService.getListeningHistory();
+      _listeningHistoryFuture = SpotifyServices.getListeningHistory();
     });
   }
 

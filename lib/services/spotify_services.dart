@@ -9,7 +9,7 @@ import '../utils/constants.dart';
 import '../utils/ui_helpers.dart';
 import '../mock/mock_data.dart';
 
-class SpotifyService {
+class SpotifyServices {
   static Future<List<ListeningHistoryItem>> getListeningHistory() async {
     // Return mock data if useMockData is true
     if (ApiConstants.useMockData) {
@@ -54,8 +54,7 @@ class SpotifyService {
       // start the Spotify authentication flow using flutter_web_auth package, passsing userToken as query parameter
       final result = await FlutterWebAuth2.authenticate(
         url: '${ApiConstants.baseUrl}/spotify/login?token=$encodedUserToken',
-        callbackUrlScheme:
-            "spotifyauth", // this should match the callbackUrlScheme in the server - custom url scheme
+        callbackUrlScheme: "spotifyauth",
       );
 
       // hide loading indicator
