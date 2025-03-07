@@ -25,8 +25,8 @@ class MyApp extends StatelessWidget {
       theme: lightMode,
       darkTheme: darkMode,
       debugShowCheckedModeBanner: false,
-      // home: ListeningHistoryPage(),
-      home: AuthPage(),
+      home: ListeningHistoryPage(),
+      // home: AuthPage(),
     );
   }
 }

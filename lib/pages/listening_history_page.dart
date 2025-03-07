@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:vault_soundtrack_frontend/models/track.dart';
+import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 
 // Import local models and services
 import '../models/listening_history_item.dart';
@@ -18,7 +20,7 @@ class ListeningHistoryPage extends StatefulWidget {
 /// Manages the data and UI updates for the listening history
 class _ListeningHistoryPageState extends State<ListeningHistoryPage> {
   // Future that will hold the list of listening history items when loaded
-  late Future<List<ListeningHistoryItem>> _listeningHistoryFuture;
+  late Future<List<Track>> _listeningHistoryFuture;
 
   @override
   void initState() {
@@ -32,7 +34,7 @@ class _ListeningHistoryPageState extends State<ListeningHistoryPage> {
   void _loadListeningHistory() {
     setState(() {
       // Call the service to get listening history and update the future
-      _listeningHistoryFuture = SpotifyServices.getListeningHistory();
+      _listeningHistoryFuture = PlaylistSessionServices.createBasePlaylist();
     });
   }
 
@@ -54,7 +56,7 @@ class _ListeningHistoryPageState extends State<ListeningHistoryPage> {
         onRefresh: () async {
           _loadListeningHistory();
         },
-        child: FutureBuilder<List<ListeningHistoryItem>>(
+        child: FutureBuilder<List<Track>>(
           // FutureBuilder handles async data loading states
           future: _listeningHistoryFuture,
           builder: (context, snapshot) {
@@ -100,7 +102,7 @@ class _ListeningHistoryPageState extends State<ListeningHistoryPage> {
 /// Shows song details including artwork, name, artist, album, and when it was played
 class ListeningHistoryCard extends StatelessWidget {
   // The data model containing all information about this history item
-  final ListeningHistoryItem item;
+  final Track item;
 
   const ListeningHistoryCard({
     Key? key,
