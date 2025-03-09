@@ -94,33 +94,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // This function will be called after successful Spotify authentication
-  void onAuthSuccess() async {
-    try {
-      // Get the current Firebase user
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Refresh the user's Firebase token
-        idToken = await user.getIdToken(true);
-
-        // Here you can:
-        // 1. Fetch user's Spotify profile information
-        // 2. Update local state to reflect the connected Spotify account
-        // 3. Navigate to a different screen if needed
-
-        print("Spotify authentication successful for user: ${user.uid}");
-
-        // You might want to store a flag in shared preferences to remember that
-        // the user has connected their Spotify account
-        // await SharedPreferences.getInstance().then((prefs) {
-        //   prefs.setBool('isSpotifyConnected', true);
-        // });
-      }
-    } catch (e) {
-      print("Error in onAuthSuccess: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,26 +113,35 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
-              MyButton(text: "Start session", onTap: handleStartSession),
+              // SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
+              MyButton(
+                  text: "Connect Spotify",
+                  onTap: () {
+                    Navigator.pushNamed(context, '/connect-spotify');
+                  }),
               SizedBox(height: 20),
-              Text(
-                sessionMessage ?? "Press the button to create a session",
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
+              MyButton(
+                text: "Start session",
+                onTap: () {
+                  Navigator.pushNamed(context, '/create-session');
+                },
               ),
-              MyButton(
-                  text: "Gets sessions",
-                  onTap: PlaylistSessionServices.getUserPlaylistSessions),
-              SizedBox(height: 20),
-              MyButton(text: "Create playlist", onTap: handleCreatePlaylist),
               SizedBox(height: 20),
               MyButton(
-                  text: "Get playlist", onTap: SpotifyServices.getPlaylistById),
-              SizedBox(height: 20),
-              MyButton(
-                  text: "Join session",
-                  onTap: PlaylistSessionServices.joinPlaylistSession),
+                text: "Join session",
+                onTap: () {
+                  Navigator.pushNamed(context, '/join-session');
+                },
+              ),
+              // MyButton(
+              //     text: "Gets sessions",
+              //     onTap: PlaylistSessionServices.getUserPlaylistSessions),
+              // SizedBox(height: 20),
+              // MyButton(text: "Create playlist", onTap: handleCreatePlaylist),
+              // SizedBox(height: 20),
+              // MyButton(
+              //     text: "Get playlist", onTap: SpotifyServices.getPlaylistById),
+              // SizedBox(height: 20),
             ],
           ),
         ),
