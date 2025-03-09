@@ -97,8 +97,11 @@ class PlaylistSessionServices {
         // Parse the response body into a Map first
         final Map<String, dynamic> responseData = json.decode(response.body);
 
+        // debug print the response data
+        print('Response data: $responseData');
+
         // Get the tracks array from the appropriate field (adjust based on your API response)
-        final List<dynamic> tracksJson = responseData['tracks'] ?? [];
+        final List<dynamic> tracksJson = responseData['listeningHistory'] ?? [];
 
         // Convert each item in the list to a Track object
         return tracksJson

@@ -98,8 +98,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Page'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -131,6 +130,13 @@ class _HomePageState extends State<HomePage> {
                 text: "Join session",
                 onTap: () {
                   Navigator.pushNamed(context, '/join-session');
+                },
+              ),
+              SizedBox(height: 20),
+              MyButton(
+                text: "Live Session",
+                onTap: () {
+                  Navigator.pushNamed(context, '/live-session');
                 },
               ),
               // MyButton(

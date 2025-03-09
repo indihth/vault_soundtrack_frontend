@@ -5,7 +5,7 @@ import 'package:vault_soundtrack_frontend/firebase_options.dart';
 import 'package:vault_soundtrack_frontend/pages/connect_spotify_page.dart';
 import 'package:vault_soundtrack_frontend/pages/create_session_page.dart';
 import 'package:vault_soundtrack_frontend/pages/join_session_page.dart';
-import 'package:vault_soundtrack_frontend/pages/listening_history_page.dart';
+import 'package:vault_soundtrack_frontend/pages/live_session_page.dart';
 import 'package:vault_soundtrack_frontend/theme/light_mode.dart';
 import 'package:vault_soundtrack_frontend/theme/dark_mode.dart';
 
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           '/auth': (context) => const AuthPage(),
           '/create-session': (context) => const CreateSessionPage(),
           '/join-session': (context) => const JoinSessionPage(),
-          '/live-session': (context) => const ListeningHistoryPage(),
+          '/live-session': (context) => const LiveSessionPage(),
           '/connect-spotify': (context) => const ConnectSpotifyPage(),
           // '/manage-spotify': (context) => const ManageSpotifyPage(),
         });
