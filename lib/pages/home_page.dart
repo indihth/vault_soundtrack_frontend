@@ -66,23 +66,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  handleGetSessions() async {
-    try {
-      // make the API request and store in response
-      List<String> response =
-          await PlaylistSessionServices.getUserPlaylistSessions();
-
-      // set the response to the sessionMessage state
-      setState(() {
-        sessionMessage = response.toString();
-      });
-    } catch (e) {
-      setState(() {
-        sessionMessage = e.toString();
-      });
-    }
-  }
-
   logout() async {
     // sign user out
     await FirebaseAuth.instance.signOut();

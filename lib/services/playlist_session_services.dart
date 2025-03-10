@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:vault_soundtrack_frontend/models/playlist.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
+import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 
 import '../models/listening_history_item.dart';
 import '../utils/constants.dart';
@@ -19,11 +20,10 @@ class PlaylistSessionServices {
   }
 
   // Join a playlist session
-  static Future<void> joinPlaylistSession() async {
+  static Future<bool> joinPlaylistSession() async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
 
-    // api call
     try {
       final response = await http.put(
         Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/join-session'),
@@ -34,7 +34,8 @@ class PlaylistSessionServices {
       );
 
       if (response.statusCode == 200) {
-        return print('Joined playlist session');
+        print('Joined playlist session');
+        return true;
       } else {
         throw Exception(
             'Failed to join the playlist session: ${response.statusCode}');
@@ -45,20 +46,14 @@ class PlaylistSessionServices {
   }
 
   // Get all playlist sessions for a user (host)
-  static Future<List<String>> getUserPlaylistSessions() async {
+  static Future<List<UserProfile>> getSessionUsers() async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-
-    // two api calls
-    // 1. get playlist sessions Ids for current user from user collection
-    // 2. get playlist sessions from playlist-sessions collection
-
+    const sessionId = "eM4zvPgXFi0goK1XNnvq";
     try {
-      // Get playlist sessions Ids for current user from user collection
-
-      // Get sessions from playlist-sessions collection
+      // Get users in current session
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/get-sessions'),
+        Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/$sessionId/users'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $userToken',
@@ -66,18 +61,26 @@ class PlaylistSessionServices {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> responseData = json.decode(response.body);
+        print('Got users response: ${response.body}');
 
-        final List<String> data =
-            responseData.map((item) => item.toString()).toList();
-        print(data);
-        return responseData.map((item) => item.toString()).toList();
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        final Map<String, dynamic> usersJson = responseData['data'];
+
+        List<UserProfile> users = [];
+        usersJson.forEach((userId, userData) {
+          // Add the userId to the userData map
+          Map<String, dynamic> userDataWithId = {...userData, 'userId': userId};
+          users.add(UserProfile.fromJson(userDataWithId));
+        });
+
+        return users;
       } else {
         throw Exception(
-            'Failed to get playlist sessions: ${response.statusCode}');
+            'Failed to get users from session: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Failed to get playlist sessions: $e');
+      throw Exception('Failed to get users from session: $e');
     }
   }
 
@@ -98,10 +101,9 @@ class PlaylistSessionServices {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
         // debug print the response data
-        print('Response data: $responseData');
 
         // Get the tracks array from the appropriate field (adjust based on your API response)
-        final List<dynamic> tracksJson = responseData['listeningHistory'] ?? [];
+        final List<dynamic> tracksJson = responseData['data']['tracks'];
 
         // Convert each item in the list to a Track object
         return tracksJson
@@ -119,7 +121,6 @@ class PlaylistSessionServices {
   static Future<String> createPlaylistSession() async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    print('User token: $userToken');
 
     try {
       // Otherwise, make the real API call

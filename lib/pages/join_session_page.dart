@@ -7,6 +7,18 @@ import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 class JoinSessionPage extends StatelessWidget {
   const JoinSessionPage({super.key});
 
+  Future<void> handleTap(context) async {
+    try {
+      bool joined = await PlaylistSessionServices.joinPlaylistSession();
+      if (joined) {
+        Navigator.pushNamed(context, '/waiting-room');
+        print("joined session!!");
+      }
+    } catch (e) {
+      // Handle error
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,13 +26,14 @@ class JoinSessionPage extends StatelessWidget {
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(16.0),
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Create Session Page'),
+              Text('Join Session Page'),
               MyButton(
-                  text: 'Create a session',
-                  onTap: PlaylistSessionServices.joinPlaylistSession)
+                  text: 'Join a session',
+                  onTap: () => handleTap(
+                      context)), // wrap in anon function to pass context
             ],
           ),
         ),
