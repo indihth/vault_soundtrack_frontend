@@ -23,10 +23,12 @@ class PlaylistSessionServices {
   static Future<bool> joinPlaylistSession() async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    const sessionId = ApiConstants.sessionId;
 
     try {
       final response = await http.put(
-        Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/join-session'),
+        Uri.parse(
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/join-session'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $userToken',
@@ -49,7 +51,8 @@ class PlaylistSessionServices {
   static Future<List<UserProfile>> getSessionUsers() async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    const sessionId = "eM4zvPgXFi0goK1XNnvq";
+    const sessionId = ApiConstants.sessionId;
+
     try {
       // Get users in current session
       final response = await http.get(
@@ -87,9 +90,11 @@ class PlaylistSessionServices {
   static Future<List<Track>> createBasePlaylist() async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      const sessionId = ApiConstants.sessionId;
 
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/create-playlist'),
+        Uri.parse(
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/create-playlist'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $userToken',

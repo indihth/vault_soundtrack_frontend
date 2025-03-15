@@ -122,6 +122,13 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pushNamed(context, '/live-session');
                 },
               ),
+              SizedBox(height: 20),
+              MyButton(
+                text: "Create playlist",
+                onTap: () {
+                  Navigator.pushNamed(context, '/live-session');
+                },
+              ),
               // MyButton(
               //     text: "Gets sessions",
               //     onTap: PlaylistSessionServices.getUserPlaylistSessions),

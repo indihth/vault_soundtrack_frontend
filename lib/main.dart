@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/auth': (context) => const AuthPage(),
           '/create-session': (context) => const CreateSessionPage(),
+          // 'create-playlist': (context) => const CreatePlaylistPage(),
           '/join-session': (context) => const JoinSessionPage(),
           '/live-session': (context) => const LiveSessionPage(),
           '/connect-spotify': (context) => const ConnectSpotifyPage(),

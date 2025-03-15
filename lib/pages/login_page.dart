@@ -172,9 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                       onTap: widget.onTap,
                       child: Text("Register Here",
                           style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .inversePrimary)),
+                              color: Theme.of(context).colorScheme.primary)),
                     ),
                   ],
                 ),
