@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vault_soundtrack_frontend/models/playlist.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 
@@ -83,7 +84,7 @@ class PlaylistSessionServices {
     }
   }
 
-  static Future<List<Track>> loadPlaylist() async {
+  static Future<Playlist> loadPlaylist() async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       const sessionId = ApiConstants.sessionId;
@@ -98,22 +99,25 @@ class PlaylistSessionServices {
       );
 
       if (response.statusCode == 200) {
-        // Parse the response body into a Map first
         final Map<String, dynamic> responseData = json.decode(response.body);
+        // Debug print to see the structure
+        print('Response data: $responseData');
+        print('Playlist data: ${responseData['data']}');
 
-        // debug print the response data
+        if (responseData['data'] == null) {
+          throw Exception('No playlist data received from server');
+        }
 
-        // Get the tracks array from the appropriate field (adjust based on your API response)
-        final List<dynamic> tracksJson = responseData['data']['tracks'];
-
-        // Convert each item in the list to a Track object
-        return tracksJson
-            .map((trackJson) => Track.fromJson(trackJson))
-            .toList();
+        final playlist = Playlist.fromJson(responseData['data']);
+        // Debug print the created playlist
+        print('Created playlist: $playlist');
+        return playlist;
       } else {
         throw Exception('Failed to get playlist: ${response.statusCode}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Error loading playlist: $e');
+      print('Stack trace: $stackTrace');
       throw Exception('Failed to create base playlist: $e');
     }
   }

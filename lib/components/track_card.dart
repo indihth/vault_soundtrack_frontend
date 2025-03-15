@@ -18,7 +18,7 @@ class TrackCard extends StatelessWidget {
       // margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 0, // removes shadow
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

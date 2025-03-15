@@ -1,12 +1,12 @@
 class Track {
-  final String id;
+  final String trackId;
   final String songName;
   final String artistName;
   final String albumName;
   final String albumArtworkUrl;
 
   Track({
-    required this.id,
+    required this.trackId,
     required this.songName,
     required this.artistName,
     required this.albumName,
@@ -19,7 +19,7 @@ class Track {
 // The factory constructor takes a JSON object and returns a type safe Track DART object
   factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
-      id: json['id'] ?? '',
+      trackId: json['trackId'] ?? '',
       artistName: json['artistName'] ?? '',
       songName: json['songName'] ?? '',
       albumName: json['albumName'] ?? '',

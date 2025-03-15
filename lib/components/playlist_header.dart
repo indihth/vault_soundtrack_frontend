@@ -21,46 +21,57 @@ class PlaylistHeader extends StatelessWidget {
             ClipRRect(
               borderRadius:
                   BorderRadius.circular(2.0), // Rounded corners for the image
-              child: Image.network(
-                item.image,
+              child: Container(
                 width: 126,
                 height: 126,
-                fit: BoxFit.cover,
-                // Handle image loading errors gracefully
-                errorBuilder: (context, error, stackTrace) {
-                  // If image loading fails, show a placeholder
-                  return Container(
-                    width: 126,
-                    height: 126,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.music_note, color: Colors.grey),
-                  );
-                },
+                color: Colors.grey[300],
+                child: const Icon(Icons.music_note, color: Colors.grey),
               ),
+              // child: Image.network(
+              //   item.image,
+              //   width: 126,
+              //   height: 126,
+              //   fit: BoxFit.cover,
+              //   // Handle image loading errors gracefully
+              //   errorBuilder: (context, error, stackTrace) {
+              //     // If image loading fails, show a placeholder
+              //     return Container(
+              //       width: 126,
+              //       height: 126,
+              //       color: Colors.grey[300],
+              //       child: const Icon(Icons.music_note, color: Colors.grey),
+              //     );
+              //   },
+              // ),
             ),
             const SizedBox(width: 20),
-            Expanded(
-              // Wrap Column with Expanded so softWrap works correctly
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    softWrap: true,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24.0,
-                    ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  softWrap: true,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24.0,
                   ),
-                  Text(
-                    item.users.join(', '),
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14.0,
-                    ),
+                ),
+                Text(
+                  item.description,
+                  softWrap: true,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14.0,
                   ),
-                ],
-              ),
+                ),
+                // Text(
+                //   item.users.join(', '),
+                //   style: const TextStyle(
+                //     color: Colors.grey,
+                //     fontSize: 14.0,
+                //   ),
+                // ),
+              ],
             ),
           ],
         ),

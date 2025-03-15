@@ -21,14 +21,15 @@ class LiveSessionPage extends StatefulWidget {
 /// Manages the data and UI updates for the listening history
 class _LiveSessionPageState extends State<LiveSessionPage> {
   // Future that will hold the list of listening history items when loaded
-  late Future<List<Track>> _playlistFuture;
+  late Future<Playlist> _playlistFuture;
 
-  // Dummy playlist data for testing
-  static final Playlist dummyPlaylist = Playlist(
-    name: 'My Awesome Playlist',
-    image: 'https://example.com/playlist-cover.jpg',
-    users: ['Alice', 'Bob', 'Charlie'],
-  );
+  // // Dummy playlist data for testing
+  // static final Playlist dummyPlaylist = Playlist(
+  //   title: 'My Awesome Playlist',
+
+  //   image: 'https://example.com/playlist-cover.jpg',
+  //   users: ['Alice', 'Bob', 'Charlie'],
+  // );
 
   @override
   void initState() {
@@ -72,57 +73,58 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Column(
-        children: [
-          // Title and subtitle for the listening history component
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: PlaylistHeader(
-              item: dummyPlaylist,
-              handleEndSession: handleEndSession,
-              handleSavePlaylist: handleSavePlaylist,
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<Track>>(
-              // FutureBuilder handles async data loading states
-              future: _playlistFuture,
-              builder: (context, snapshot) {
-                // Handle different states of the future
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Show loading spinner while data is being fetched
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  // Show error message if data fetching failed
-                  return Center(
-                    child: Text(
-                      'Error: ${snapshot.error}',
-                      style: TextStyle(color: Colors.red),
+      body: FutureBuilder<Playlist>(
+        // FutureBuilder handles async data loading states
+        future: _playlistFuture,
+        builder: (context, snapshot) {
+          // Handle different states of the future
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show loading spinner while data is being fetched
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            // Show error message if data fetching failed
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.tracks.isEmpty) {
+            // Show message when no history data exists
+            return const Center(
+              child: Text('No listening history found'),
+            );
+          } else {
+            print(
+                'snapshot.data!.tracks.length: ${snapshot.data!.tracks.length}');
+            // Build a scrollable list of history items when data is available
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  PlaylistHeader(
+                    item: snapshot.data!,
+                    handleEndSession: handleEndSession,
+                    handleSavePlaylist: handleSavePlaylist,
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      // padding: const EdgeInsets.all(16.0),
+                      itemCount:
+                          snapshot.data!.tracks.length, // Also fixed itemCount
+                      itemBuilder: (context, index) {
+                        final item = snapshot.data!.tracks[index];
+                        return TrackCard(item: item);
+                      },
                     ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  // Show message when no history data exists
-                  return const Center(
-                    child: Text('No listening history found'),
-                  );
-                } else {
-                  // Build a scrollable list of history items when data is available
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      final item = snapshot.data![index];
-                      // Create a card for each history item
-                      return TrackCard(item: item);
-                    },
-                  );
-                }
-              },
-            ),
-          ),
-        ],
+                  ),
+                ],
+              ),
+            );
+          }
+        },
       ),
     );
   }
