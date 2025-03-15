@@ -148,4 +148,29 @@ class PlaylistSessionServices {
       throw Exception('Failed to create playlist session: $e');
     }
   }
+
+  static Future<void> savePlaylist() async {
+    // await user id token
+    final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    const sessionId = ApiConstants.sessionId;
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/save-playlist'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $userToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Saved playlist');
+      } else {
+        throw Exception('Failed to save playlist: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to save playlist: $e');
+    }
+  }
 }
