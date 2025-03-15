@@ -17,12 +17,19 @@ class MyTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      // TODO: add keyboard type parameter
+      // keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         // focusColor: Theme.of(context).colorScheme.inversePrimary,
         hintText: hintText,
         hintStyle: TextStyle(
           color: Theme.of(context).colorScheme.secondary,
         ),
+        suffixIcon: IconButton(
+            onPressed: () {
+              controller.clear(); // clear text field when icon clicked
+            },
+            icon: Icon(Icons.clear)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(

@@ -1,7 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import '../utils/constants.dart';
 import '../services/spotify_services.dart';
 
 class SpotifyAuthButton extends StatelessWidget {

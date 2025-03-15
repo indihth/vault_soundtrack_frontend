@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vault_soundtrack_frontend/components/my_button.dart';
 import 'package:vault_soundtrack_frontend/models/user_profile.dart';

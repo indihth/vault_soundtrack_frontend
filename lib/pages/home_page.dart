@@ -1,13 +1,6 @@
-import 'dart:ffi';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:vault_soundtrack_frontend/components/my_button.dart';
-import 'dart:convert';
-
-import 'package:vault_soundtrack_frontend/components/spotify_auth_button.dart';
-import 'package:vault_soundtrack_frontend/models/playlist.dart';
 import 'package:vault_soundtrack_frontend/services/spotify_services.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
@@ -28,22 +21,6 @@ class _HomePageState extends State<HomePage> {
   List<String> sessions = []; // list of sessions from the server API request
 
   String? idToken;
-
-  handleStartSession() async {
-    try {
-      // make the API request and store in response
-      String response = await PlaylistSessionServices.createPlaylistSession();
-
-      // set the response to the sessionMessage state
-      setState(() {
-        sessionMessage = response;
-      });
-    } catch (e) {
-      setState(() {
-        sessionMessage = e.toString();
-      });
-    }
-  }
 
   handleCreatePlaylist() async {
     try {
@@ -118,13 +95,6 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               MyButton(
                 text: "Live Session",
-                onTap: () {
-                  Navigator.pushNamed(context, '/live-session');
-                },
-              ),
-              SizedBox(height: 20),
-              MyButton(
-                text: "Create playlist",
                 onTap: () {
                   Navigator.pushNamed(context, '/live-session');
                 },

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
 import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
-
-// Import local models and services
-import '../models/listening_history_item.dart';
-import '../services/spotify_services.dart';
 
 /// ListeningHistoryPage: A StatefulWidget that displays the user's listening history
 /// This is the main screen that shows all songs the user has played
@@ -34,7 +29,7 @@ class _ListeningHistoryPageState extends State<ListeningHistoryPage> {
   void _loadListeningHistory() {
     setState(() {
       // Call the service to get listening history and update the future
-      _listeningHistoryFuture = PlaylistSessionServices.createBasePlaylist();
+      _listeningHistoryFuture = PlaylistSessionServices.loadPlaylist();
     });
   }
 

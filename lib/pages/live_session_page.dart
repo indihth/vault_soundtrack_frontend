@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
 import 'package:vault_soundtrack_frontend/components/playlist_header.dart';
 import 'package:vault_soundtrack_frontend/components/track_card.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
@@ -7,9 +6,7 @@ import 'package:vault_soundtrack_frontend/services/playlist_session_services.dar
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 
 // Import local models and services
-import '../models/listening_history_item.dart';
 import '../models/playlist.dart';
-import '../services/spotify_services.dart';
 
 /// LiveSessionPage: A StatefulWidget that displays the user's listening history
 /// This is the main screen that shows all songs the user has played
@@ -45,7 +42,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   void _loadPlaylist() {
     setState(() {
       // Call the service to get listening history and update the future
-      _playlistFuture = PlaylistSessionServices.createBasePlaylist();
+      _playlistFuture = PlaylistSessionServices.loadPlaylist();
     });
   }
 
@@ -53,6 +50,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     try {
       final success = await PlaylistSessionServices.savePlaylist();
       if (success) {
+        // TODO: Update 'save' button to show 'saved'
+
+        // Show a success message to the user
         UIHelpers.showSnackBar(context, 'Playlist saved successfully!',
             isError: false);
       } else {

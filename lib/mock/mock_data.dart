@@ -2,8 +2,6 @@ import '../models/listening_history_item.dart';
 
 class MockData {
   static List<ListeningHistoryItem> getMockListeningHistory() {
-    final now = DateTime.now();
-
     return [
       ListeningHistoryItem(
         id: '1',

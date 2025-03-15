@@ -1,13 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:vault_soundtrack_frontend/models/playlist.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 
-import '../models/listening_history_item.dart';
 import '../utils/constants.dart';
 
 class PlaylistSessionServices {
@@ -87,14 +83,14 @@ class PlaylistSessionServices {
     }
   }
 
-  static Future<List<Track>> createBasePlaylist() async {
+  static Future<List<Track>> loadPlaylist() async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       const sessionId = ApiConstants.sessionId;
 
-      final response = await http.post(
+      final response = await http.get(
         Uri.parse(
-            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/create-playlist'),
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/load-playlist'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $userToken',
@@ -123,7 +119,8 @@ class PlaylistSessionServices {
   }
 
   // Create new playlist session
-  static Future<String> createPlaylistSession() async {
+  static Future<String> createPlaylistSession(
+      String title, String description) async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
 
@@ -135,9 +132,12 @@ class PlaylistSessionServices {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $userToken',
         },
+        body: json.encode({'title': title, 'description': description}),
       );
 
       if (response.statusCode == 200) {
+        // TODO: forward user to session share page with session id
+
         final Map<String, dynamic> responseData = json.decode(response.body);
         return responseData['data'];
       } else {

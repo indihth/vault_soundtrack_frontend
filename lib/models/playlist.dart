@@ -1,5 +1,3 @@
-import 'package:vault_soundtrack_frontend/models/track.dart';
-
 class Playlist {
   // final int id;
   final String name;
