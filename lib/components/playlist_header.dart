@@ -4,18 +4,17 @@ import 'package:vault_soundtrack_frontend/models/playlist.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 
 class PlaylistHeader extends StatelessWidget {
+  final VoidCallback handleSavePlaylist;
+  final VoidCallback handleEndSession;
   final Playlist item;
-  const PlaylistHeader({super.key, required this.item});
+  const PlaylistHeader(
+      {super.key,
+      required this.item,
+      required this.handleSavePlaylist,
+      required this.handleEndSession});
 
   @override
   Widget build(BuildContext context) {
-    void handleSavePlaylist() {
-      PlaylistSessionServices.savePlaylist();
-    }
-
-    void handleEndSession() {
-      // Implement end session functionality here
-    }
     return Column(
       children: [
         Row(

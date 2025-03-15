@@ -149,8 +149,8 @@ class PlaylistSessionServices {
     }
   }
 
-  static Future<void> savePlaylist() async {
-    // await user id token
+  static Future<bool> savePlaylist() async {
+// await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     const sessionId = ApiConstants.sessionId;
 
@@ -164,11 +164,7 @@ class PlaylistSessionServices {
         },
       );
 
-      if (response.statusCode == 200) {
-        print('Saved playlist');
-      } else {
-        throw Exception('Failed to save playlist: ${response.statusCode}');
-      }
+      return response.statusCode == 200; // Return true if successful
     } catch (e) {
       throw Exception('Failed to save playlist: $e');
     }

@@ -4,6 +4,7 @@ import 'package:vault_soundtrack_frontend/components/playlist_header.dart';
 import 'package:vault_soundtrack_frontend/components/track_card.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
+import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 
 // Import local models and services
 import '../models/listening_history_item.dart';
@@ -36,30 +37,41 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   void initState() {
     super.initState();
     // Load the listening history when the widget is first created
-    _loadListeningHistory();
+    _loadPlaylist();
   }
 
   /// Loads or reloads the listening history data from the service
   /// Updates the state to trigger a UI rebuild with the new data
-  void _loadListeningHistory() {
+  void _loadPlaylist() {
     setState(() {
       // Call the service to get listening history and update the future
       _playlistFuture = PlaylistSessionServices.createBasePlaylist();
     });
   }
 
+  Future<void> handleSavePlaylist() async {
+    try {
+      final success = await PlaylistSessionServices.savePlaylist();
+      if (success) {
+        UIHelpers.showSnackBar(context, 'Playlist saved successfully!',
+            isError: false);
+      } else {
+        UIHelpers.showSnackBar(context, 'Failed to save playlist',
+            isError: true);
+      }
+    } catch (e) {
+      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+    }
+  }
+
+  void handleEndSession() {
+    // Implement end session functionality here
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          // actions: [
-          //   // Refresh button in the app bar
-          //   IconButton(
-          //     icon: const Icon(Icons.refresh),
-          //     onPressed: _loadListeningHistory, // Reload history when pressed
-          //   ),
-          // ],
-          ),
+      appBar: AppBar(),
       body: Column(
         children: [
           // Title and subtitle for the listening history component
@@ -67,6 +79,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
             padding: const EdgeInsets.all(16.0),
             child: PlaylistHeader(
               item: dummyPlaylist,
+              handleEndSession: handleEndSession,
+              handleSavePlaylist: handleSavePlaylist,
             ),
           ),
           Expanded(
