@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vault_soundtrack_frontend/components/my_button.dart';
 import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class SessionWaitingRoomPage extends StatefulWidget {
   const SessionWaitingRoomPage({super.key});
@@ -51,6 +52,29 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
                 text: "Lets go!",
                 // onTap: displayUsersInSession,
                 onTap: handleTap,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Invite friends to join your session',
+                style: TextStyle(
+                    fontSize: 24, color: Theme.of(context).colorScheme.primary),
+              ),
+              const SizedBox(height: 20),
+              QrImageView(
+                data:
+                    'sample://open.my.app/#/join-session/zSWMPbpbr3Yre5R4z2hI',
+                version: QrVersions.auto,
+                size: 200.0,
+                backgroundColor: Colors.white,
+                padding: EdgeInsets.all(10),
+                errorStateBuilder: (cxt, err) {
+                  return Center(
+                    child: Text(
+                      "Uh oh! Something went wrong...",
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                },
               ),
             ],
           ),

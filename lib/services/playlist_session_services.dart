@@ -17,10 +17,13 @@ class PlaylistSessionServices {
   }
 
   // Join a playlist session
-  static Future<bool> joinPlaylistSession() async {
+  static Future<bool> joinPlaylistSession(String? sessionId) async {
+    print("sessionId in services: $sessionId");
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    const sessionId = ApiConstants.sessionId;
+
+    sessionId ??=
+        ApiConstants.sessionId; // Use default session id if not provided
 
     try {
       final response = await http.put(
@@ -100,9 +103,6 @@ class PlaylistSessionServices {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        // Debug print to see the structure
-        print('Response data: $responseData');
-        print('Playlist data: ${responseData['data']}');
 
         if (responseData['data'] == null) {
           throw Exception('No playlist data received from server');
@@ -123,7 +123,7 @@ class PlaylistSessionServices {
   }
 
   // Create new playlist session
-  static Future<String> createPlaylistSession(
+  static Future<Map<String, dynamic>> createPlaylistSession(
       String title, String description) async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -143,13 +143,15 @@ class PlaylistSessionServices {
         // TODO: forward user to session share page with session id
 
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return responseData['data'];
+        return {"success": true, "data": responseData['data']};
       } else {
-        throw Exception(
-            'Failed to create playlist session: ${response.statusCode}');
+        return {"success": false, "error": response.statusCode};
+        // throw Exception(
+        //     'Failed to create playlist session: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Failed to create playlist session: $e');
+      return {"success": false, "error": e.toString()};
+      // throw Exception('Failed to create playlist session: $e');
     }
   }
 

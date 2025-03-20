@@ -3,6 +3,7 @@
         android:label="vault_soundtrack_frontend"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,6 +20,28 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"
             />
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
+            <!-- App Link sample -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="www.example.com"
+                    android:pathPrefix="/foo" />
+            </intent-filter>
+
+
+            <!-- Deep Link sample -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Add optional android:host to distinguish your app
+          from others in case of conflicting scheme name -->
+                <data android:scheme="sample" android:host="open.my.app" />
+                <!-- <data android:scheme="sample" /> -->
+            </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -55,4 +78,7 @@
             <data android:mimeType="text/plain" />
         </intent>
     </queries>
+
+    <!-- Camera permission - needed for QR code scanning -->
+    <uses-permission android:name="android.permission.CAMERA" />
 </manifest>
