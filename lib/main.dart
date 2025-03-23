@@ -2,7 +2,7 @@ import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
-import 'package:vault_soundtrack_frontend/components/deep_link_listener.dart';
+import 'package:vault_soundtrack_frontend/widgets/deep_link_listener.dart';
 import 'package:vault_soundtrack_frontend/firebase_options.dart';
 import 'package:vault_soundtrack_frontend/pages/connect_spotify_page.dart';
 import 'package:vault_soundtrack_frontend/pages/create_session_page.dart';

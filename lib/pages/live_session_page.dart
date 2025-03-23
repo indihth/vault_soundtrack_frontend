@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vault_soundtrack_frontend/components/playlist_header.dart';
-import 'package:vault_soundtrack_frontend/components/track_card.dart';
+import 'package:vault_soundtrack_frontend/widgets/playlist_header.dart';
+import 'package:vault_soundtrack_frontend/widgets/track_card.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';

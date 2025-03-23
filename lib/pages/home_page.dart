@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vault_soundtrack_frontend/components/my_button.dart';
+import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/services/spotify_services.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';

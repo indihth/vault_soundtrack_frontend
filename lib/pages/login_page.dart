@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vault_soundtrack_frontend/components/my_button.dart';
-import 'package:vault_soundtrack_frontend/components/my_text_field.dart';
+import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
+import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
 import 'package:vault_soundtrack_frontend/helper/helper_functions.dart';
 
 class LoginPage extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vault_soundtrack_frontend/components/my_button.dart';
+import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:qr_flutter/qr_flutter.dart';

@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vault_soundtrack_frontend/components/spotify_auth_button.dart';
+import 'package:vault_soundtrack_frontend/widgets/spotify_auth_button.dart';
 
 class ConnectSpotifyPage extends StatefulWidget {
   const ConnectSpotifyPage({super.key});
