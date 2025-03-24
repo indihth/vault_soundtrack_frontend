@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
@@ -18,9 +20,13 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
 
   handleStartSession() async {
     try {
+      // Get the SessionState from the Provider as an instance
+      final sessionState = Provider.of<SessionState>(context, listen: false);
       // make the API request and store in response
-      final response = await PlaylistSessionServices.createPlaylistSession(
+      final response = await sessionState.createSession(
           _titleController.text, _descriptionController.text);
+      // final response = await PlaylistSessionServices.createPlaylistSession(
+      //     _titleController.text, _descriptionController.text);
 
       // if the response is successful, navigate to the waiting room
       if (response["success"]) {
@@ -32,6 +38,8 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     } catch (e) {
       UIHelpers.showSnackBar(context, 'Failed to create session - $e',
           isError: true);
+      print(
+          '####################################################### Failed to create session - $e');
     }
   }
 

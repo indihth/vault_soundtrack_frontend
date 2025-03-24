@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
-import 'package:vault_soundtrack_frontend/models/user_profile.dart';
-import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class SessionWaitingRoomPage extends StatefulWidget {
@@ -15,21 +15,16 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
   void handleTap() {
     // Redirect to live session page
     Navigator.pushNamed(context, '/live-session');
+    print('Redirecting to live session page');
   }
 
-  // Display current users in session
-  Future<List<UserProfile>> displayUsersInSession() async {
-    // Get all users in session
-    final users = await PlaylistSessionServices.getSessionUsers();
-    // Display users in session
-    print(users);
-    return users;
-  }
-
-  // Listen for new users joining session
+  // TODO: display users as they join
 
   @override
   Widget build(BuildContext context) {
+    // Get Session State
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(),
       body: Center(
@@ -38,6 +33,26 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // display session name and description
+              Text(
+                sessionState.sessionName,
+                style: TextStyle(
+                    fontSize: 24, color: Theme.of(context).colorScheme.primary),
+              ),
+              Text(
+                sessionState.sessionDescription,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Theme.of(context).colorScheme.secondary),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                sessionState.hostDisplayName,
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.secondary),
+              ),
               Text(
                 'Waiting for all users to join...',
                 style: TextStyle(
@@ -62,7 +77,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
               const SizedBox(height: 20),
               QrImageView(
                 data:
-                    'sample://open.my.app/#/join-session/zSWMPbpbr3Yre5R4z2hI',
+                    'sample://open.my.app/#/join-session/${sessionState.sessionId}',
                 version: QrVersions.auto,
                 size: 200.0,
                 backgroundColor: Colors.white,

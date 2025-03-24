@@ -10,6 +10,12 @@
       "type": "dart"
     },
     {
+      "name": "OnePlus",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "fff424b8"
+    },
+    {
       "name": "Android",
       "request": "launch",
       "type": "dart",
@@ -30,8 +36,8 @@
   ],
   "compounds": [
     {
-      "name": "All Devices",
-      "configurations": ["Android", "Chrome"]
+      "name": "Phones",
+      "configurations": ["Android", "OnePlus"]
     }
   ]
 }

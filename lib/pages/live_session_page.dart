@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/playlist_header.dart';
 import 'package:vault_soundtrack_frontend/widgets/track_card.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
@@ -42,14 +45,22 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   /// Updates the state to trigger a UI rebuild with the new data
   void _loadPlaylist() {
     setState(() {
+      // Get sessionid from the Provider
+      final sessionState = Provider.of<SessionState>(context, listen: false);
+      print('sessionState.sessionId: ${sessionState.sessionId}');
+
       // Call the service to get listening history and update the future
-      _playlistFuture = PlaylistSessionServices.loadPlaylist();
+      _playlistFuture =
+          PlaylistSessionServices.loadPlaylist(sessionState.sessionId);
     });
   }
 
   Future<void> handleSavePlaylist() async {
     try {
-      final success = await PlaylistSessionServices.savePlaylist();
+      // Get session id from the Provider
+      final sessionState = Provider.of<SessionState>(context, listen: false);
+      final success =
+          await PlaylistSessionServices.savePlaylist(sessionState.sessionId);
       if (success) {
         // TODO: Update 'save' button to show 'saved'
 
@@ -72,7 +83,40 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code),
+            onPressed: () {
+              // Get session ID from provider
+              final sessionId =
+                  Provider.of<SessionState>(context, listen: false).sessionId;
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Session QR Code'),
+                  content: QrImageView(
+                    data: sessionId,
+                    // version: QrVersions.auto,
+                    size: 200.0,
+                  ),
+                  // Image.network(
+                  //   'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=$sessionId',
+                  //   height: 200,
+                  //   width: 200,
+                  // ),
+                  actions: [
+                    TextButton(
+                      child: const Text('Close'),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: FutureBuilder<Playlist>(
         // FutureBuilder handles async data loading states
         future: _playlistFuture,

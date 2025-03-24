@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vault_soundtrack_frontend/models/playlist.dart';
-import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 
 import '../utils/constants.dart';
@@ -17,15 +16,13 @@ class PlaylistSessionServices {
   }
 
   // Join a playlist session
-  static Future<bool> joinPlaylistSession(String? sessionId) async {
+  static Future<Map<String, dynamic>> joinPlaylistSession(
+      String sessionId) async {
     print("sessionId in services: $sessionId");
     // await user id token
-    final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-
-    sessionId ??=
-        ApiConstants.sessionId; // Use default session id if not provided
 
     try {
+      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       final response = await http.put(
         Uri.parse(
             '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/join-session'),
@@ -37,10 +34,12 @@ class PlaylistSessionServices {
 
       if (response.statusCode == 200) {
         print('Joined playlist session');
-        return true;
+        // return true;
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return {"success": true, "data": responseData['session']};
       } else {
         throw Exception(
-            'Failed to join the playlist session: ${response.statusCode}');
+            'Failed to join the playlist session: ${response.statusCode} and ${response.body}');
       }
     } catch (e) {
       throw Exception('Failed to join playlist session: $e');
@@ -87,10 +86,11 @@ class PlaylistSessionServices {
     }
   }
 
-  static Future<Playlist> loadPlaylist() async {
+  static Future<Playlist> loadPlaylist(String sessionId) async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-      const sessionId = ApiConstants.sessionId;
+      // const sessionId = ApiConstants.sessionId;
+      print('############################ sessionId: $sessionId');
 
       final response = await http.get(
         Uri.parse(
@@ -113,7 +113,8 @@ class PlaylistSessionServices {
         print('Created playlist: $playlist');
         return playlist;
       } else {
-        throw Exception('Failed to get playlist: ${response.statusCode}');
+        throw Exception(
+            'Failed to get playlist: ${response.statusCode}, message: ${response.body}');
       }
     } catch (e, stackTrace) {
       print('Error loading playlist: $e');
@@ -125,10 +126,9 @@ class PlaylistSessionServices {
   // Create new playlist session
   static Future<Map<String, dynamic>> createPlaylistSession(
       String title, String description) async {
-    // await user id token
-    final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-
     try {
+      // await user id token
+      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       // Otherwise, make the real API call
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/create-session'),
@@ -138,16 +138,13 @@ class PlaylistSessionServices {
         },
         body: json.encode({'title': title, 'description': description}),
       );
+      print('Response: ${response.body}');
 
       if (response.statusCode == 200) {
-        // TODO: forward user to session share page with session id
-
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return {"success": true, "data": responseData['data']};
+        return {"success": true, "data": responseData['session']};
       } else {
         return {"success": false, "error": response.statusCode};
-        // throw Exception(
-        //     'Failed to create playlist session: ${response.statusCode}');
       }
     } catch (e) {
       return {"success": false, "error": e.toString()};
@@ -155,10 +152,10 @@ class PlaylistSessionServices {
     }
   }
 
-  static Future<bool> savePlaylist() async {
+  static Future<bool> savePlaylist(String sessionId) async {
 // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    const sessionId = ApiConstants.sessionId;
+    // const sessionId = ApiConstants.sessionId;
 
     try {
       final response = await http.post(
