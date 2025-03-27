@@ -23,16 +23,16 @@ class Track {
 // handling the JSON parsing here is good practice (Separation of Concerns)
 
 // The factory constructor takes a JSON object and returns a type safe Track DART object
-  factory Track.fromMap(Map<String, dynamic> data) {
+  factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
-      trackId: data['trackId'] ?? '',
-      artistName: data['artistName'] ?? '',
-      songName: data['songName'] ?? '',
-      albumName: data['albumName'] ?? '',
-      albumArtworkUrl: data['albumArtworkUrl'] ?? '',
-      upVotes: data['upVotes'] ?? 0,
-      udownVotes: data['downVotes'] ?? 0,
-      votedBy: (data['votedBy'] as Map<String, dynamic>?) ??
+      trackId: json['trackId'] ?? '',
+      artistName: json['artistName'] ?? '',
+      songName: json['songName'] ?? '',
+      albumName: json['albumName'] ?? '',
+      albumArtworkUrl: json['albumArtworkUrl'] ?? '',
+      upVotes: json['upVotes'] ?? 0,
+      udownVotes: json['downVotes'] ?? 0,
+      votedBy: (json['votedBy'] as Map<String, dynamic>?) ??
           {}, // Cast and provide default empty map
     );
   }
