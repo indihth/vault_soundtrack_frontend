@@ -4,6 +4,7 @@ import 'package:vault_soundtrack_frontend/services/playlist_session_services.dar
 class SessionState extends ChangeNotifier {
   // The current session ID
   String _sessionId = '';
+  String _playlistId = '';
   String _sessionName = '';
   String _sessionDescription = '';
   String _hostDisplayName = '';
@@ -14,6 +15,7 @@ class SessionState extends ChangeNotifier {
 
   // Getters
   String get sessionId => _sessionId;
+  String get playlistId => _playlistId;
   String get sessionName => _sessionName;
   String get sessionDescription => _sessionDescription;
   String get hostDisplayName => _hostDisplayName;
@@ -75,6 +77,11 @@ class SessionState extends ChangeNotifier {
   void setSessionId(String sessionId) {
     _sessionId = sessionId;
     notifyListeners(); // Notify listeners of the change
+  }
+
+  void setPlaylistId(String playlistId) {
+    _playlistId = playlistId;
+    notifyListeners();
   }
 
   void setSessionName(String sessionName) {

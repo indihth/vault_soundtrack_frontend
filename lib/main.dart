@@ -10,7 +10,6 @@ import 'package:vault_soundtrack_frontend/pages/connect_spotify_page.dart';
 import 'package:vault_soundtrack_frontend/pages/create_session_page.dart';
 import 'package:vault_soundtrack_frontend/pages/join_session_page.dart';
 import 'package:vault_soundtrack_frontend/pages/live_session_page.dart';
-import 'package:vault_soundtrack_frontend/pages/qr_scanner_page.dart';
 import 'package:vault_soundtrack_frontend/pages/session_waiting_room_page.dart';
 import 'package:vault_soundtrack_frontend/theme/light_mode.dart';
 import 'package:vault_soundtrack_frontend/theme/dark_mode.dart';

@@ -86,7 +86,7 @@ class PlaylistSessionServices {
     }
   }
 
-  static Future<Playlist> loadPlaylist(String sessionId) async {
+  static Future<String> startPlaylistSession(String sessionId) async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       // const sessionId = ApiConstants.sessionId;
@@ -108,10 +108,10 @@ class PlaylistSessionServices {
           throw Exception('No playlist data received from server');
         }
 
-        final playlist = Playlist.fromJson(responseData['data']);
+        // final playlist = Playlist.fromFirestore(responseData['data']);
         // Debug print the created playlist
-        print('Created playlist: $playlist');
-        return playlist;
+        // print('Created playlist: $playlist');
+        return responseData['data']['playlistId'];
       } else {
         throw Exception(
             'Failed to get playlist: ${response.statusCode}, message: ${response.body}');

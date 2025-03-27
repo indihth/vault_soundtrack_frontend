@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
               email: emailController.text, password: passwordController.text);
-      // update user display name - 2nd write needed?
+      // update user display name - handle on backend? or update immediately?
 
       // hide loading indicator
       Navigator.pop(context);

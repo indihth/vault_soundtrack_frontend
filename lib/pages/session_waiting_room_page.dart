@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
+import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -12,10 +14,73 @@ class SessionWaitingRoomPage extends StatefulWidget {
 }
 
 class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
-  void handleTap() {
-    // Redirect to live session page
-    Navigator.pushNamed(context, '/live-session');
-    print('Redirecting to live session page');
+  // void handleTap() async {
+  //   try {
+  //     // Get session state data
+  //     final sessionState = Provider.of<SessionState>(context, listen: false);
+
+  //     // Start playlist session from services
+  //     final playlistId = await PlaylistSessionServices.startPlaylistSession(
+  //         sessionState.sessionId);
+
+  //     // Save playlistId in session state
+  //     sessionState.setPlaylistId(playlistId);
+  //     print('Playlist ID: $playlistId');
+
+  //     // Redirect to live session page on success
+  //     Navigator.pushNamed(context, '/live-session',
+  //         arguments: {'playlistId': playlistId});
+  //     print('Redirecting to live session page');
+  //   } catch (e) {
+  //     print('Error starting session: $e');
+  //     throw Exception('Error starting session: $e');
+  //   }
+  // }
+
+  void handleTap() async {
+    try {
+      // Get session state data
+      final sessionState = Provider.of<SessionState>(context, listen: false);
+
+      // Start playlist session from services - show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+
+      // Call the API
+      final playlistId = await PlaylistSessionServices.startPlaylistSession(
+          sessionState.sessionId);
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Save playlistId in session state if it's not null
+      if (playlistId != null && playlistId.isNotEmpty) {
+        sessionState.setPlaylistId(playlistId);
+
+        // Navigate using replacement to avoid stack issues
+        Navigator.pushReplacementNamed(
+          context,
+          '/live-session',
+        );
+      } else {
+        UIHelpers.showSnackBar(
+            context, 'Failed to start session: Invalid playlist ID',
+            isError: true);
+      }
+    } catch (e) {
+      // Close loading dialog if it's open
+      Navigator.maybeOf(context)?.pop();
+
+      // Show error message
+      UIHelpers.showSnackBar(context, 'Error starting session: $e',
+          isError: true);
+      print('Error starting session: $e');
+    }
   }
 
   // TODO: display users as they join

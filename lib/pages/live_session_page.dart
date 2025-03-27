@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:vault_soundtrack_frontend/services/database_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/playlist_header.dart';
 import 'package:vault_soundtrack_frontend/widgets/track_card.dart';
@@ -20,39 +22,18 @@ class LiveSessionPage extends StatefulWidget {
   State<LiveSessionPage> createState() => _LiveSessionPageState();
 }
 
-/// The state class for LiveSessionPage
-/// Manages the data and UI updates for the listening history
 class _LiveSessionPageState extends State<LiveSessionPage> {
+  /// The state class for LiveSessionPage
+  /// Manages the data and UI updates for the listening history
   // Future that will hold the list of listening history items when loaded
-  late Future<Playlist> _playlistFuture;
-
-  // // Dummy playlist data for testing
-  // static final Playlist dummyPlaylist = Playlist(
-  //   title: 'My Awesome Playlist',
-
-  //   image: 'https://example.com/playlist-cover.jpg',
-  //   users: ['Alice', 'Bob', 'Charlie'],
-  // );
+  // final Stream<DocumentSnapshot<Object?>> _playlistStream = DatabaseServices.getDocumentStream('playlists', playlistId)
 
   @override
   void initState() {
     super.initState();
-    // Load the listening history when the widget is first created
-    _loadPlaylist();
-  }
 
-  /// Loads or reloads the listening history data from the service
-  /// Updates the state to trigger a UI rebuild with the new data
-  void _loadPlaylist() {
-    setState(() {
-      // Get sessionid from the Provider
-      final sessionState = Provider.of<SessionState>(context, listen: false);
-      print('sessionState.sessionId: ${sessionState.sessionId}');
-
-      // Call the service to get listening history and update the future
-      _playlistFuture =
-          PlaylistSessionServices.loadPlaylist(sessionState.sessionId);
-    });
+    // Get session state from the Provider
+    // final sessionState = Provider.of<SessionState>(context, listen: false);
   }
 
   Future<void> handleSavePlaylist() async {
@@ -70,9 +51,11 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       } else {
         UIHelpers.showSnackBar(context, 'Failed to save playlist',
             isError: true);
+        throw Exception('Failed to save playlist');
       }
     } catch (e) {
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Error saving playlist: $e');
     }
   }
 
@@ -82,6 +65,13 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get playlistId from state
+    final playlistId = Provider.of<SessionState>(context).playlistId;
+    if (playlistId.isEmpty) {
+      return const Center(
+        child: Text('No playlist ID found'),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -117,9 +107,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
           ),
         ],
       ),
-      body: FutureBuilder<Playlist>(
-        // FutureBuilder handles async data loading states
-        future: _playlistFuture,
+      body: StreamBuilder<Playlist>(
+        stream: _getPlaylistStream(playlistId),
         builder: (context, snapshot) {
           // Handle different states of the future
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -141,6 +130,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               child: Text('No listening history found'),
             );
           } else {
+            Playlist playlist = snapshot.data!;
+
             print(
                 'snapshot.data!.tracks.length: ${snapshot.data!.tracks.length}');
             // Build a scrollable list of history items when data is available
@@ -149,18 +140,16 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               child: Column(
                 children: [
                   PlaylistHeader(
-                    item: snapshot.data!,
+                    item: playlist,
                     handleEndSession: handleEndSession,
                     handleSavePlaylist: handleSavePlaylist,
                   ),
                   Expanded(
                     child: ListView.builder(
-                      // padding: const EdgeInsets.all(16.0),
-                      itemCount:
-                          snapshot.data!.tracks.length, // Also fixed itemCount
+                      itemCount: playlist.tracks.length, // Also fixed itemCount
                       itemBuilder: (context, index) {
-                        final item = snapshot.data!.tracks[index];
-                        return TrackCard(item: item);
+                        Track track = playlist.tracks[index];
+                        return TrackCard(item: track);
                       },
                     ),
                   ),
@@ -171,5 +160,32 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
         },
       ),
     );
+  }
+
+  // Stream to listen to playlist changes from Firestore
+  Stream<Playlist> _getPlaylistStream(String playlistId) {
+    // final databaseServices =
+    //     DatabaseServices(); // Create an instance of DatabaseServices
+// Check if playlistId is empty or null
+    if (playlistId.isEmpty) {
+      // Return an empty stream that emits an error
+      return Stream.error('Invalid playlist ID');
+    }
+
+    try {
+      return FirebaseFirestore.instance
+          .collection('playlists')
+          .doc(playlistId)
+          .snapshots()
+          .map((snapshot) {
+        if (snapshot.exists) {
+          return Playlist.fromFirestore(snapshot);
+        }
+        throw Exception('Playlist not found');
+      });
+    } catch (e) {
+      print('Error creating stream: $e');
+      return Stream.error('Failed to create playlist stream: $e');
+    }
   }
 }

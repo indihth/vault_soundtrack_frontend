@@ -73,7 +73,7 @@ class SpotifyServices {
       );
 
       if (response.statusCode == 200) {
-        return Playlist.fromJson(json.decode(response.body));
+        return Playlist.fromFirestore(json.decode(response.body));
       } else {
         throw Exception('Failed to get playlist');
       }

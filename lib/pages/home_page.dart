@@ -99,15 +99,6 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pushNamed(context, '/live-session');
                 },
               ),
-              // MyButton(
-              //     text: "Gets sessions",
-              //     onTap: PlaylistSessionServices.getUserPlaylistSessions),
-              // SizedBox(height: 20),
-              // MyButton(text: "Create playlist", onTap: handleCreatePlaylist),
-              // SizedBox(height: 20),
-              // MyButton(
-              //     text: "Get playlist", onTap: SpotifyServices.getPlaylistById),
-              // SizedBox(height: 20),
             ],
           ),
         ),
