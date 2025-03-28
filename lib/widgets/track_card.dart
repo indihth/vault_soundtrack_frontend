@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
@@ -10,13 +11,15 @@ class TrackCard extends StatelessWidget {
   // The data model containing all information about this history item
   final Track item;
 
-  const TrackCard({
+  TrackCard({
     Key? key,
     required this.item,
   }) : super(key: key);
 
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+
 // handle upvote with voting services
-  void handleUpVote(context, track) async {
+  void handleVote(context, track, voteType) async {
     print('Upvoting song: ${track.songName}');
     final sessionState = Provider.of<SessionState>(context, listen: false);
     if (sessionState.sessionId.isEmpty) {
@@ -24,8 +27,8 @@ class TrackCard extends StatelessWidget {
     }
 
     try {
-      await VotingServices.handleVote(
-          sessionState.sessionId, sessionState.playlistId, track.trackId, "up");
+      await VotingServices.handleVote(sessionState.sessionId,
+          sessionState.playlistId, track.trackId, voteType);
     } catch (e) {
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
       throw Exception('Failed to upvote song: $e');
@@ -34,6 +37,10 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get if user has up voted/down for this track
+    bool isUpVoted = item.hasUserUpVoted(userId);
+    bool isDownVoted = item.hasUserDownVoted(userId);
+
     return Card(
       // is a card widget appropriate here?
       // margin: const EdgeInsets.only(bottom: 16.0),
@@ -108,19 +115,63 @@ class TrackCard extends StatelessWidget {
             ),
             // dispay icon if song is liked
             // if (item.isLiked)
+
+            SizedBox(width: 8.0), // Spacing between icons
+
+            // Upvote icon
             Column(
               children: [
                 GestureDetector(
-                  onTap: () => handleUpVote(context, item),
+                  onTap: () => handleVote(context, item, "up"),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.thumb_up,
-                        color: Colors.blue,
-                      ),
+                      if (isUpVoted)
+                        const Icon(
+                          Icons.thumb_up,
+                          color: Colors.blue,
+                        )
+                      else
+                        const Icon(
+                          Icons.thumb_up_alt_outlined,
+                          color: Colors.blue,
+                        ),
                       const SizedBox(height: 4.0),
                       Text(
                         item.upVotes
+                            .toString(), // Handle null values by showing '0'
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(width: 8.0), // Spacing between icons
+
+            // Downvote icon
+            Column(
+              children: [
+                GestureDetector(
+                  onTap: () => handleVote(context, item, "down"),
+                  child: Column(
+                    children: [
+                      if (isDownVoted)
+                        const Icon(
+                          Icons.thumb_down,
+                          color: Colors.grey,
+                        )
+                      else
+                        const Icon(
+                          Icons.thumb_down_alt_outlined,
+                          color: Colors.grey,
+                        ),
+                      const SizedBox(height: 4.0),
+                      Text(
+                        item.downVotes
                             .toString(), // Handle null values by showing '0'
                         style: TextStyle(
                           color: Colors.grey[600],
