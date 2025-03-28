@@ -7,7 +7,7 @@ import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 
 /// Shows song details including artwork, name, artist, album, and when it was played
-class TrackCard extends StatelessWidget {
+class TrackCard extends StatefulWidget {
   // The data model containing all information about this history item
   final Track item;
 
@@ -16,20 +16,91 @@ class TrackCard extends StatelessWidget {
     required this.item,
   }) : super(key: key);
 
+  @override
+  State<TrackCard> createState() => _TrackCardState();
+}
+
+class _TrackCardState extends State<TrackCard> {
   final userId = FirebaseAuth.instance.currentUser?.uid;
+  late int upVotes;
+  late int downVotes;
+  late bool isUpVoted;
+  late bool isDownVoted;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // State variables for voting
+    upVotes = widget.item.upVotes; // get upvotes from the track
+    downVotes = widget.item.downVotes; // get downvotes from the track
+    isUpVoted = widget.item.hasUserUpVoted(userId); // check if user has upvoted
+    isDownVoted =
+        widget.item.hasUserDownVoted(userId); // check if user has downvoted
+  }
+
+  // handle optamistic UI update on voting
+  void updateVoteUI(String voteType) async {
+    // update vote state
+
+    // Handle vote and count logic
+    if (voteType == 'up') {
+      if (isUpVoted) {
+        setState(() {
+          isUpVoted = false;
+          upVotes -= 1;
+        });
+      } else {
+        setState(() {
+          isUpVoted = true;
+          upVotes += 1;
+        });
+      }
+
+      // Handle downvote logic
+    } else if (voteType == 'down') {
+      if (isDownVoted) {
+        setState(() {
+          isDownVoted = false;
+          downVotes -= 1;
+        });
+      } else {
+        setState(() {
+          isDownVoted = true;
+          downVotes += 1;
+        });
+      }
+    }
+  }
 
 // handle upvote with voting services
   void handleVote(context, track, voteType) async {
-    print('Upvoting song: ${track.songName}');
-    final sessionState = Provider.of<SessionState>(context, listen: false);
-    if (sessionState.sessionId.isEmpty) {
-      throw Exception('Session ID state is empty');
-    }
+    // Store original state for potential revert
+    final originalUpVotes = upVotes;
+    final originalDownVotes = downVotes;
+    final originalIsUpVoted = isUpVoted;
+    final originalIsDownVoted = isDownVoted;
+
+    // update UI optimistically - show the vote before it's confirmed by server
+    updateVoteUI(voteType);
 
     try {
+      final sessionState = Provider.of<SessionState>(context, listen: false);
+      if (sessionState.sessionId.isEmpty) {
+        throw Exception('Session ID state is empty');
+      }
+
       await VotingServices.handleVote(sessionState.sessionId,
           sessionState.playlistId, track.trackId, voteType);
     } catch (e) {
+      // Revert UI states if voting fails
+      setState(() {
+        upVotes = originalUpVotes;
+        downVotes = originalDownVotes;
+        isUpVoted = originalIsUpVoted;
+        isDownVoted = originalIsDownVoted;
+      });
+
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
       throw Exception('Failed to upvote song: $e');
     }
@@ -37,10 +108,6 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get if user has up voted/down for this track
-    bool isUpVoted = item.hasUserUpVoted(userId);
-    bool isDownVoted = item.hasUserDownVoted(userId);
-
     return Card(
       // is a card widget appropriate here?
       // margin: const EdgeInsets.only(bottom: 16.0),
@@ -55,7 +122,7 @@ class TrackCard extends StatelessWidget {
               borderRadius:
                   BorderRadius.circular(2.0), // Rounded corners for the image
               child: Image.network(
-                item.albumArtworkUrl,
+                widget.item.albumArtworkUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -79,7 +146,7 @@ class TrackCard extends StatelessWidget {
                 children: [
                   // Song name with ellipsis if too long
                   Text(
-                    item.songName,
+                    widget.item.songName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16.0,
@@ -91,7 +158,7 @@ class TrackCard extends StatelessWidget {
                   const SizedBox(height: 4.0), // Vertical spacing
                   // Artist name
                   Text(
-                    item.artistName,
+                    widget.item.artistName,
                     style: TextStyle(
                       color: Colors.grey[700],
                       fontSize: 14.0,
@@ -102,7 +169,7 @@ class TrackCard extends StatelessWidget {
                   const SizedBox(height: 4.0),
                   // Album name
                   Text(
-                    item.albumName,
+                    widget.item.albumName,
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14.0,
@@ -122,23 +189,18 @@ class TrackCard extends StatelessWidget {
             Column(
               children: [
                 GestureDetector(
-                  onTap: () => handleVote(context, item, "up"),
+                  onTap: () => handleVote(context, widget.item, "up"),
                   child: Column(
                     children: [
-                      if (isUpVoted)
-                        const Icon(
-                          Icons.thumb_up,
-                          color: Colors.blue,
-                        )
-                      else
-                        const Icon(
-                          Icons.thumb_up_alt_outlined,
-                          color: Colors.blue,
-                        ),
+                      Icon(
+                        isUpVoted
+                            ? Icons.thumb_up
+                            : Icons.thumb_up_alt_outlined,
+                        color: Colors.blue,
+                      ),
                       const SizedBox(height: 4.0),
                       Text(
-                        item.upVotes
-                            .toString(), // Handle null values by showing '0'
+                        upVotes.toString(), // Handle null values by showing '0'
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12.0,
@@ -156,22 +218,18 @@ class TrackCard extends StatelessWidget {
             Column(
               children: [
                 GestureDetector(
-                  onTap: () => handleVote(context, item, "down"),
+                  onTap: () => handleVote(context, widget.item, "up"),
                   child: Column(
                     children: [
-                      if (isDownVoted)
-                        const Icon(
-                          Icons.thumb_down,
-                          color: Colors.grey,
-                        )
-                      else
-                        const Icon(
-                          Icons.thumb_down_alt_outlined,
-                          color: Colors.grey,
-                        ),
+                      Icon(
+                        isDownVoted
+                            ? Icons.thumb_down
+                            : Icons.thumb_down_alt_outlined,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(height: 4.0),
                       Text(
-                        item.downVotes
+                        downVotes
                             .toString(), // Handle null values by showing '0'
                         style: TextStyle(
                           color: Colors.grey[600],
