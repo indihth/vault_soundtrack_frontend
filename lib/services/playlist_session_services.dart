@@ -104,13 +104,14 @@ class PlaylistSessionServices {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
-        if (responseData['data'] == null) {
+        print('Created playlist: $responseData');
+        if (responseData['data']['playlistId'] == null) {
           throw Exception('No playlist data received from server');
         }
 
         // final playlist = Playlist.fromFirestore(responseData['data']);
         // Debug print the created playlist
-        // print('Created playlist: $playlist');
+        print('Created playlist: $responseData');
         return responseData['data']['playlistId'];
       } else {
         throw Exception(

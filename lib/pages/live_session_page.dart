@@ -25,8 +25,6 @@ class LiveSessionPage extends StatefulWidget {
 class _LiveSessionPageState extends State<LiveSessionPage> {
   /// The state class for LiveSessionPage
   /// Manages the data and UI updates for the listening history
-  // Future that will hold the list of listening history items when loaded
-  // final Stream<DocumentSnapshot<Object?>> _playlistStream = DatabaseServices.getDocumentStream('playlists', playlistId)
 
   @override
   void initState() {
@@ -40,6 +38,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     try {
       // Get session id from the Provider
       final sessionState = Provider.of<SessionState>(context, listen: false);
+      if (sessionState.sessionId.isEmpty) {
+        throw Exception('Session ID state is empty');
+      }
       final success =
           await PlaylistSessionServices.savePlaylist(sessionState.sessionId);
       if (success) {
@@ -67,6 +68,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   Widget build(BuildContext context) {
     // Get playlistId from state
     final playlistId = Provider.of<SessionState>(context).playlistId;
+    // final playlistId =
+    //     'njArseYarosmcD7pCNZt'; // Hardcoded playlistId for testing
+
     if (playlistId.isEmpty) {
       return const Center(
         child: Text('No playlist ID found'),

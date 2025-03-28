@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
+import 'package:vault_soundtrack_frontend/services/voting.services.dart';
+import 'package:vault_soundtrack_frontend/state/session_state.dart';
+import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 
 /// Shows song details including artwork, name, artist, album, and when it was played
 class TrackCard extends StatelessWidget {
@@ -10,6 +14,23 @@ class TrackCard extends StatelessWidget {
     Key? key,
     required this.item,
   }) : super(key: key);
+
+// handle upvote with voting services
+  void handleUpVote(context, track) async {
+    print('Upvoting song: ${track.songName}');
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+    if (sessionState.sessionId.isEmpty) {
+      throw Exception('Session ID state is empty');
+    }
+
+    try {
+      await VotingServices.handleVote(
+          sessionState.sessionId, sessionState.playlistId, track.trackId, "up");
+    } catch (e) {
+      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Failed to upvote song: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +105,32 @@ class TrackCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            // dispay icon if song is liked
+            // if (item.isLiked)
+            Column(
+              children: [
+                GestureDetector(
+                  onTap: () => handleUpVote(context, item),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.thumb_up,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(height: 4.0),
+                      Text(
+                        item.upVotes
+                            .toString(), // Handle null values by showing '0'
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

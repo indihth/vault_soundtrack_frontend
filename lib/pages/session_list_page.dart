@@ -18,7 +18,7 @@ class SessionListPage extends StatelessWidget {
       sessionState.setSessionId(session.id);
       sessionState.setSessionName(data['sessionName'] ?? '');
       sessionState.setSessionDescription(data['description'] ?? '');
-      sessionState.setPlaylistId(data['playlist']['playlistId'] ?? '');
+      sessionState.setPlaylistId(data['playlistId'] ?? '');
       sessionState.setHostDisplayName(data['hostDisplayName'] ?? '');
       sessionState.setIsActive(true);
       sessionState.setIsHost(false); // Set as non-host for testing
