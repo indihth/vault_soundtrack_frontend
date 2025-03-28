@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
+import 'package:vault_soundtrack_frontend/pages/session_list_page.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/deep_link_listener.dart';
 import 'package:vault_soundtrack_frontend/firebase_options.dart';
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
                 sessionId: 'undefined',
               ),
           '/live-session': (context) => const LiveSessionPage(),
+          '/session-list': (context) => const SessionListPage(),
           '/connect-spotify': (context) => const ConnectSpotifyPage(),
           '/waiting-room': (context) => const SessionWaitingRoomPage(),
           // '/manage-spotify': (context) => const ManageSpotifyPage(),
