@@ -39,6 +39,34 @@ class _TrackCardState extends State<TrackCard> {
         widget.item.hasUserDownVoted(userId); // check if user has downvoted
   }
 
+  void _addUpVote() {
+    setState(() {
+      isUpVoted = true;
+      upVotes += 1;
+    });
+  }
+
+  void _removeUpVote() {
+    setState(() {
+      isUpVoted = false;
+      upVotes -= 1;
+    });
+  }
+
+  void _addDownVote() {
+    setState(() {
+      isDownVoted = true;
+      downVotes += 1;
+    });
+  }
+
+  void _removeDownVote() {
+    setState(() {
+      isDownVoted = false;
+      downVotes -= 1;
+    });
+  }
+
   // handle optamistic UI update on voting
   void updateVoteUI(String voteType) async {
     // update vote state
@@ -46,29 +74,26 @@ class _TrackCardState extends State<TrackCard> {
     // Handle vote and count logic
     if (voteType == 'up') {
       if (isUpVoted) {
-        setState(() {
-          isUpVoted = false;
-          upVotes -= 1;
-        });
+        // If state is already upvoted, remove upvote
+        _removeUpVote();
+      } else if (isDownVoted) {
+        // If state is downvoted, remove downvote and add upvote
+        _addUpVote();
+        _removeDownVote();
       } else {
-        setState(() {
-          isUpVoted = true;
-          upVotes += 1;
-        });
+        // If state is not upvoted or downvoted, add upvote
+        _addUpVote();
       }
 
       // Handle downvote logic
     } else if (voteType == 'down') {
       if (isDownVoted) {
-        setState(() {
-          isDownVoted = false;
-          downVotes -= 1;
-        });
+        _removeDownVote();
+      } else if (isUpVoted) {
+        _addDownVote();
+        _removeUpVote();
       } else {
-        setState(() {
-          isDownVoted = true;
-          downVotes += 1;
-        });
+        _addDownVote();
       }
     }
   }
@@ -218,7 +243,7 @@ class _TrackCardState extends State<TrackCard> {
             Column(
               children: [
                 GestureDetector(
-                  onTap: () => handleVote(context, widget.item, "up"),
+                  onTap: () => handleVote(context, widget.item, "down"),
                   child: Column(
                     children: [
                       Icon(
