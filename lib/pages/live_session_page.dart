@@ -34,6 +34,35 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     // final sessionState = Provider.of<SessionState>(context, listen: false);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('session state active didChanged running');
+
+    // Check if session is ended and needs to redirect
+    final sessionState = Provider.of<SessionState>(context);
+    print('session state active didChanged: ${sessionState.isActive}');
+
+    if (!sessionState.isActive) {
+      // Use addPostFrameCallback to ensure the navigation happens after the build is complete
+      // Otherwise potential error trying to navigate while the widget is still building
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+
+      // If session is ended, stop listening to session status
+      return;
+    }
+
+    final sessionId = sessionState.sessionId;
+
+    // Is this needed?
+    // if (sessionId.isEmpty) {
+    //   throw Exception('Session ID state is empty');
+    // }
+    sessionState.listenToSessionStatus(sessionId);
+  }
+
   Future<void> handleSavePlaylist() async {
     try {
       // Get session id from the Provider
@@ -60,16 +89,28 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     }
   }
 
-  void handleEndSession() {
-    // Implement end session functionality here
+  void handleEndSession() async {
+    try {
+      final sessionState = Provider.of<SessionState>(context, listen: false);
+      final sessionId = sessionState.sessionId;
+
+      if (sessionId.isEmpty) {
+        throw Exception('Session ID state is empty');
+      }
+
+      sessionState.endSession(sessionId);
+    } catch (e) {
+      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Error ending session: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get playlistId from state
-    final playlistId = Provider.of<SessionState>(context).playlistId;
-    // final playlistId =
-    //     'njArseYarosmcD7pCNZt'; // Hardcoded playlistId for testing
+    // Get session state
+    final sessionState = Provider.of<SessionState>(context);
+    final playlistId = sessionState.playlistId;
+    final isHost = sessionState.isHost;
 
     if (playlistId.isEmpty) {
       return const Center(
@@ -145,6 +186,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                 children: [
                   PlaylistHeader(
                     item: playlist,
+                    isHost: isHost,
                     handleEndSession: handleEndSession,
                     handleSavePlaylist: handleSavePlaylist,
                   ),

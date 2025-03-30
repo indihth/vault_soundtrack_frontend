@@ -20,7 +20,8 @@ class SessionListPage extends StatelessWidget {
       sessionState.setSessionDescription(data['description'] ?? '');
       sessionState.setPlaylistId(data['playlistId'] ?? '');
       sessionState.setHostDisplayName(data['hostDisplayName'] ?? '');
-      sessionState.setIsHost(false); // Set as non-host for testing
+      sessionState.setIsActive(true); // Set for testing
+      sessionState.setIsHost(false); // Set for testing
 
       // Navigate to live session
       Navigator.pushReplacementNamed(context, '/live-session');

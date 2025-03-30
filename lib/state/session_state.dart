@@ -41,13 +41,13 @@ class SessionState extends ChangeNotifier {
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
         final status =
-            data['status'] ?? 'something'; // Default to 'waiting' if not set
-        print('--------------------------------------------- status: $status');
+            data['status'] ?? 'waiting'; // Default to 'waiting' if not set
 
         if (status == 'active' && !_isActive) {
           // Session is now active
           setIsActive(true);
 
+          // Check if the playlist ID exists then set it
           if (data['playlistId'] != null) {
             final playlistId = data['playlistId'] as String;
             setPlaylistId(
@@ -59,6 +59,10 @@ class SessionState extends ChangeNotifier {
 
           // Notify listeners of the change
           notifyListeners();
+        } else if (status == 'ended' && _isActive) {
+          // Session has ended
+          setIsActive(false);
+          clearSessionState(); // Clear session state when the session ends
         }
       }
     });
@@ -112,10 +116,30 @@ class SessionState extends ChangeNotifier {
     setHostDisplayName(hostDisplayName);
     setIsHost(isHost);
 
-    print(
-        '--------------------------------------------- session state status at join: $isActive');
-
     return session;
+  }
+
+  // End session - use when the host ends the session
+  Future<void> endSession(String sessionId) async {
+    try {
+      await PlaylistSessionServices.updateSessionStatus(sessionId, "ended");
+      // Clear the session state after changing the status
+      // clearSessionState(); // Let the session clear when the listener detects the change
+    } catch (e) {
+      throw Exception('Failed to end session - $e');
+    }
+  }
+
+  // Clear the session state - use when leaving a session
+  void clearSessionState() {
+    _sessionId = '';
+    _playlistId = '';
+    _sessionName = '';
+    _sessionDescription = '';
+    _hostDisplayName = '';
+    _isHost = false;
+    _isActive = false;
+    notifyListeners();
   }
 
   // Set the current session ID
