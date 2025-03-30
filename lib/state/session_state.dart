@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 
@@ -11,8 +15,6 @@ class SessionState extends ChangeNotifier {
   bool _isHost = false;
   bool _isActive = false;
 
-  // current session users? update UI as users join
-
   // Getters
   String get sessionId => _sessionId;
   String get playlistId => _playlistId;
@@ -21,6 +23,53 @@ class SessionState extends ChangeNotifier {
   String get hostDisplayName => _hostDisplayName;
   bool get isHost => _isHost;
   bool get isActive => _isActive;
+
+  // Setup stream subscription to listen for changes in the session state
+  StreamSubscription? _sessionStateSubscription;
+
+  // Listen to session status changes in Firestore, indicate if host has started session
+  void listenToSessionStatus(String sessionId) {
+    // Cancel any existing subscription before creating a new one
+    _sessionStateSubscription?.cancel();
+
+    // Listen to the session changes in Firestore
+    _sessionStateSubscription = FirebaseFirestore.instance
+        .collection('sessions')
+        .doc(sessionId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        final status =
+            data['status'] ?? 'something'; // Default to 'waiting' if not set
+        print('--------------------------------------------- status: $status');
+
+        if (status == 'active' && !_isActive) {
+          // Session is now active
+          setIsActive(true);
+
+          if (data['playlistId'] != null) {
+            final playlistId = data['playlistId'] as String;
+            setPlaylistId(
+                playlistId); // needed for redirect to live session page
+          } else {
+            throw Exception(
+                'Playlist ID is null - cannot redirect to live session page');
+          }
+
+          // Notify listeners of the change
+          notifyListeners();
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Cancel the subscription when the state is disposed
+    _sessionStateSubscription?.cancel();
+    super.dispose();
+  }
 
   Future<Map<String, dynamic>> createSession(
       String title, String description) async {
@@ -34,14 +83,12 @@ class SessionState extends ChangeNotifier {
       final sessionDescription = session['data']['description'];
       final hostDisplayName = session['data']['hostDisplayName'];
       final isHost = true; // The user who creates the session is the host
-      final isActive = true; // The session is active when created
       // Set the session ID
       setSessionName(sessionName);
       setSessionId(sessionId);
       setSessionDescription(sessionDescription);
       setHostDisplayName(hostDisplayName);
       setIsHost(isHost);
-      setIsActive(isActive);
 
       return session;
     } catch (e) {
@@ -58,17 +105,15 @@ class SessionState extends ChangeNotifier {
     final sessionDescription = session['data']['description'];
     final hostDisplayName = session['data']['hostDisplayName'];
     final isHost = false; // The user who joins the session is not the host
-    final isActive = true; // The session is active when joined
     // Set the session ID
     setSessionName(sessionName);
     setSessionId(sessionId);
     setSessionDescription(sessionDescription);
     setHostDisplayName(hostDisplayName);
     setIsHost(isHost);
-    setIsActive(isActive);
 
     print(
-        '--------------------------------------------- session state ID: $sessionId');
+        '--------------------------------------------- session state status at join: $isActive');
 
     return session;
   }

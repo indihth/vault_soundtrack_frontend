@@ -124,6 +124,34 @@ class PlaylistSessionServices {
     }
   }
 
+  // Update session status
+  static Future<void> updateSessionStatus(
+      String sessionId, String status) async {
+    try {
+      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      // const sessionId = ApiConstants.sessionId;
+
+      final response = await http.put(
+        Uri.parse(
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/update-status'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $userToken',
+        },
+        body: json.encode({'status': status}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Updated session status to $status');
+      } else {
+        throw Exception(
+            'Failed to update session status: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to update session status: $e');
+    }
+  }
+
   // Create new playlist session
   static Future<Map<String, dynamic>> createPlaylistSession(
       String title, String description) async {

@@ -14,33 +14,50 @@ class SessionWaitingRoomPage extends StatefulWidget {
 }
 
 class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
-  // void handleTap() async {
-  //   try {
-  //     // Get session state data
-  //     final sessionState = Provider.of<SessionState>(context, listen: false);
+  @override
+  void initState() {
+    super.initState();
 
-  //     // Start playlist session from services
-  //     final playlistId = await PlaylistSessionServices.startPlaylistSession(
-  //         sessionState.sessionId);
+    // Listen to session status changes on first load of widget
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+    sessionState.listenToSessionStatus(sessionState.sessionId);
 
-  //     // Save playlistId in session state
-  //     sessionState.setPlaylistId(playlistId);
-  //     print('Playlist ID: $playlistId');
+    print('session state active INIT: ${sessionState.isActive}');
+  }
 
-  //     // Redirect to live session page on success
-  //     Navigator.pushNamed(context, '/live-session',
-  //         arguments: {'playlistId': playlistId});
-  //     print('Redirecting to live session page');
-  //   } catch (e) {
-  //     print('Error starting session: $e');
-  //     throw Exception('Error starting session: $e');
-  //   }
-  // }
+  // Flutter lifecycle method - Runs after initState, when dependencies change and before build()
+  // It will be called whenever SessionState changes, redirect when session is active
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('session state active didChanged running');
+
+    // Check if session is active and need to redirect
+    final sessionState = Provider.of<SessionState>(context);
+    sessionState.listenToSessionStatus(sessionState.sessionId);
+
+    print('session state active didChanged: ${sessionState.isActive}');
+
+    if (sessionState.isActive && !sessionState.isHost) {
+      // Use addPostFrameCallback to ensure the navigation happens after the build is complete
+      // Otherwise potential error trying to navigate while the widget is still building
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/live-session');
+      });
+    }
+  }
 
   void handleTap() async {
     try {
       // Get session state data
       final sessionState = Provider.of<SessionState>(context, listen: false);
+
+      // Display error is a non-host tries to start the session - shouldn't be possible though
+      if (!sessionState.isHost) {
+        UIHelpers.showSnackBar(context, 'Only the host can start the session',
+            isError: true);
+        return;
+      }
 
       // Start playlist session from services - show loading indicator
       showDialog(
@@ -55,12 +72,17 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
       final playlistId = await PlaylistSessionServices.startPlaylistSession(
           sessionState.sessionId);
 
+      // Update session status in db
+      await PlaylistSessionServices.updateSessionStatus(
+          sessionState.sessionId, 'active');
+
       // Close loading dialog
       Navigator.pop(context);
 
       // Save playlistId in session state if it's not null
-      if (playlistId != null && playlistId.isNotEmpty) {
+      if (playlistId.isNotEmpty) {
         sessionState.setPlaylistId(playlistId);
+        sessionState.setIsActive(true); // Set session as active
 
         // Navigate using replacement to avoid stack issues
         Navigator.pushReplacementNamed(
@@ -82,8 +104,6 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
       print('Error starting session: $e');
     }
   }
-
-  // TODO: display users as they join
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +133,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
               ),
               const SizedBox(height: 20),
               Text(
-                sessionState.hostDisplayName,
+                'Hosted by: ${sessionState.hostDisplayName}',
                 style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.secondary),
@@ -124,16 +144,25 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
                     fontSize: 24, color: Theme.of(context).colorScheme.primary),
               ),
               const SizedBox(height: 20),
-              Text(
-                'Press button when ready',
-                // style: TextStyle(fontSize: 24),
-              ),
-              MyButton(
-                text: "Lets go!",
-                // onTap: displayUsersInSession,
-                onTap: handleTap,
-              ),
-              const SizedBox(height: 20),
+              if (!sessionState.isHost) ...[
+                Text(
+                  'The host will start the session when everyone is ready',
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.secondary),
+                ),
+              ] else ...[
+                Text(
+                  'Press button when ready',
+                  // style: TextStyle(fontSize: 24),
+                ),
+                MyButton(
+                  text: "Lets go!",
+                  // onTap: displayUsersInSession,
+                  onTap: handleTap,
+                ),
+                const SizedBox(height: 20),
+              ],
               Text(
                 'Invite friends to join your session',
                 style: TextStyle(
@@ -141,8 +170,8 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
               ),
               const SizedBox(height: 20),
               QrImageView(
-                data:
-                    'sample://open.my.app/#/join-session/${sessionState.sessionId}',
+                data: sessionState.sessionId,
+                // 'sample://open.my.app/#/join-session/${sessionState.sessionId}',
                 version: QrVersions.auto,
                 size: 200.0,
                 backgroundColor: Colors.white,

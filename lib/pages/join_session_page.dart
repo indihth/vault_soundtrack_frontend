@@ -98,12 +98,12 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
                       // Check if the barcode has a displayValue (the actual scanned content)
                       if (barcodes.isNotEmpty &&
                           barcodes.first.rawValue != null) {
-                        final String scannedUrl = barcodes.first.rawValue!;
+                        final String sessionId = barcodes.first.rawValue!;
 
-                        if (scannedUrl.startsWith(
-                            'sample://open.my.app/#/join-session/')) {
-                          // extract session id from deep link
-                          final sessionId = scannedUrl.split('/').last;
+                        // Check if the scanned value matches a valid session ID format, 20 character string
+                        if (sessionId.length == 20) {
+                          // if (scannedUrl.startsWith(
+                          //     'sample://open.my.app/#/join-session/')) {
                           // final sessionId = "eM4zvPgXFi0goK1XNnvq";
                           print('Scanned URL: $sessionId');
 
