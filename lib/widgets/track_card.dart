@@ -5,6 +5,7 @@ import 'package:vault_soundtrack_frontend/models/track.dart';
 import 'package:vault_soundtrack_frontend/services/voting.services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
+import 'package:vault_soundtrack_frontend/widgets/vote_icon.dart';
 
 /// Shows song details including artwork, name, artist, album, and when it was played
 class TrackCard extends StatefulWidget {
@@ -22,18 +23,17 @@ class TrackCard extends StatefulWidget {
 
 class _TrackCardState extends State<TrackCard> {
   final userId = FirebaseAuth.instance.currentUser?.uid;
-  late int upVotes;
-  late int downVotes;
   late bool isUpVoted;
   late bool isDownVoted;
+
+  bool isUpVoteLoading = false;
+  bool isDownVoteLoading = false;
 
   @override
   void initState() {
     super.initState();
 
     // State variables for voting
-    upVotes = widget.item.upVotes; // get upvotes from the track
-    downVotes = widget.item.downVotes; // get downvotes from the track
     isUpVoted = widget.item.hasUserUpVoted(userId); // check if user has upvoted
     isDownVoted =
         widget.item.hasUserDownVoted(userId); // check if user has downvoted
@@ -42,28 +42,28 @@ class _TrackCardState extends State<TrackCard> {
   void _addUpVote() {
     setState(() {
       isUpVoted = true;
-      upVotes += 1;
+      // upVotes += 1;
     });
   }
 
   void _removeUpVote() {
     setState(() {
       isUpVoted = false;
-      upVotes -= 1;
+      // upVotes -= 1;
     });
   }
 
   void _addDownVote() {
     setState(() {
       isDownVoted = true;
-      downVotes += 1;
+      // downVotes += 1;
     });
   }
 
   void _removeDownVote() {
     setState(() {
       isDownVoted = false;
-      downVotes -= 1;
+      // downVotes -= 1;
     });
   }
 
@@ -76,24 +76,32 @@ class _TrackCardState extends State<TrackCard> {
       if (isUpVoted) {
         // If state is already upvoted, remove upvote
         _removeUpVote();
+        isUpVoteLoading = true;
       } else if (isDownVoted) {
         // If state is downvoted, remove downvote and add upvote
         _addUpVote();
         _removeDownVote();
+        isUpVoteLoading = true;
+        isDownVoteLoading = true;
       } else {
         // If state is not upvoted or downvoted, add upvote
         _addUpVote();
+        isUpVoteLoading = true;
       }
 
       // Handle downvote logic
     } else if (voteType == 'down') {
       if (isDownVoted) {
         _removeDownVote();
+        isDownVoteLoading = true;
       } else if (isUpVoted) {
         _addDownVote();
         _removeUpVote();
+        isUpVoteLoading = true;
+        isDownVoteLoading = true;
       } else {
         _addDownVote();
+        isDownVoteLoading = true;
       }
     }
   }
@@ -101,8 +109,6 @@ class _TrackCardState extends State<TrackCard> {
 // handle upvote with voting services
   void handleVote(context, track, voteType) async {
     // Store original state for potential revert
-    final originalUpVotes = upVotes;
-    final originalDownVotes = downVotes;
     final originalIsUpVoted = isUpVoted;
     final originalIsDownVoted = isDownVoted;
 
@@ -115,15 +121,23 @@ class _TrackCardState extends State<TrackCard> {
         throw Exception('Session ID state is empty');
       }
 
+      // Display loading indicator for voteCount text until response is received
+
       await VotingServices.handleVote(sessionState.sessionId,
           sessionState.playlistId, track.trackId, voteType);
+
+      // Set loading state to false on success db update
+      setState(() {
+        isUpVoteLoading = false;
+        isDownVoteLoading = false;
+      });
     } catch (e) {
       // Revert UI states if voting fails
       setState(() {
-        upVotes = originalUpVotes;
-        downVotes = originalDownVotes;
         isUpVoted = originalIsUpVoted;
         isDownVoted = originalIsDownVoted;
+        isUpVoteLoading = false;
+        isDownVoteLoading = false;
       });
 
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
@@ -210,61 +224,26 @@ class _TrackCardState extends State<TrackCard> {
 
             SizedBox(width: 8.0), // Spacing between icons
 
-            // Upvote icon
-            Column(
-              children: [
-                GestureDetector(
-                  onTap: () => handleVote(context, widget.item, "up"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        isUpVoted
-                            ? Icons.thumb_up
-                            : Icons.thumb_up_alt_outlined,
-                        color: Colors.blue,
-                      ),
-                      const SizedBox(height: 4.0),
-                      Text(
-                        upVotes.toString(), // Handle null values by showing '0'
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            const SizedBox(width: 8.0),
+
+            // Up vote icon and text - takes loading state and widget item to get live vote data rom db
+            VoteIcon(
+              isUpVote: true,
+              isVoted: isUpVoted,
+              isLoading: isUpVoteLoading,
+              voteCount: widget.item.upVotes,
+              onTap: () => handleVote(context, widget.item, "up"),
             ),
 
-            SizedBox(width: 8.0), // Spacing between icons
+            const SizedBox(width: 8.0),
 
-            // Downvote icon
-            Column(
-              children: [
-                GestureDetector(
-                  onTap: () => handleVote(context, widget.item, "down"),
-                  child: Column(
-                    children: [
-                      Icon(
-                        isDownVoted
-                            ? Icons.thumb_down
-                            : Icons.thumb_down_alt_outlined,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(height: 4.0),
-                      Text(
-                        downVotes
-                            .toString(), // Handle null values by showing '0'
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            // Down vote icon and text
+            VoteIcon(
+              isUpVote: false,
+              isVoted: isDownVoted,
+              isLoading: isDownVoteLoading,
+              voteCount: widget.item.downVotes,
+              onTap: () => handleVote(context, widget.item, "down"),
             ),
           ],
         ),

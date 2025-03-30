@@ -30,20 +30,15 @@ class VotingServices {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return {"success": true, "data": responseData['session']};
       } else {
-        throw Exception(
+        print(
             'Failed to cast vote: ${response.statusCode} and ${response.body}');
+        throw Exception('Failed to cast vote: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error casting vote: $e');
       throw Exception('Failed to cast vote: $e');
     }
   }
-
-  // api post request with playlistId, trackId, userId and voteType (upvote or downvote)
-
-  // Handle vote response
-  // Update track vote count in UI?
-  // Update track vote status
-  // Update user vote status
 
   // Handle removal of track?
 }
