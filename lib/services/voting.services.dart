@@ -28,7 +28,8 @@ class VotingServices {
         print('Cast vote successfully');
         // return true;
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return {"success": true, "data": responseData['session']};
+        // print('vote responseData: ${responseData['data']['vote']}');
+        return {"success": true, "data": responseData['data']};
       } else {
         print(
             'Failed to cast vote: ${response.statusCode} and ${response.body}');

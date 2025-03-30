@@ -115,6 +115,8 @@ class _TrackCardState extends State<TrackCard> {
     // update UI optimistically - show the vote before it's confirmed by server
     updateVoteUI(voteType);
 
+    // Need to compare db with state to confirm - icons is filled when it shouldn't be
+
     try {
       final sessionState = Provider.of<SessionState>(context, listen: false);
       if (sessionState.sessionId.isEmpty) {

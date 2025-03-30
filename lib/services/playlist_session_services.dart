@@ -46,46 +46,6 @@ class PlaylistSessionServices {
     }
   }
 
-  // Get all playlist sessions for a user (host)
-  static Future<List<UserProfile>> getSessionUsers() async {
-    // await user id token
-    final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    const sessionId = ApiConstants.sessionId;
-
-    try {
-      // Get users in current session
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/$sessionId/users'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $userToken',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        print('Got users response: ${response.body}');
-
-        final Map<String, dynamic> responseData = json.decode(response.body);
-
-        final Map<String, dynamic> usersJson = responseData['data'];
-
-        List<UserProfile> users = [];
-        usersJson.forEach((userId, userData) {
-          // Add the userId to the userData map
-          Map<String, dynamic> userDataWithId = {...userData, 'userId': userId};
-          users.add(UserProfile.fromJson(userDataWithId));
-        });
-
-        return users;
-      } else {
-        throw Exception(
-            'Failed to get users from session: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Failed to get users from session: $e');
-    }
-  }
-
   static Future<String> startPlaylistSession(String sessionId) async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
