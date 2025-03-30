@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
+import 'package:vault_soundtrack_frontend/pages/home_page.dart';
 import 'package:vault_soundtrack_frontend/pages/session_list_page.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/deep_link_listener.dart';
@@ -48,9 +49,8 @@ class MyApp extends StatelessWidget {
         home: DeepLinkListener(child: AuthPage()),
         routes: {
           '/auth': (context) => const AuthPage(),
+          '/home': (context) => HomePage(),
           '/create-session': (context) => const CreateSessionPage(),
-          // 'create-playlist': (context) => const CreatePlaylistPage(),
-          // '/join-session': (context) => const QRScannerPage(),
           '/join-session': (context) => const JoinSessionPage(
                 sessionId: 'undefined',
               ),
