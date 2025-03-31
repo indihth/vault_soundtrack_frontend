@@ -18,6 +18,10 @@ mixin VotingMixin<T extends StatefulWidget> on State<T> {
     if (_isVoteInProgress)
       return; // If a vote is already in progress, do nothing
 
+    //TODO: Add limit to api calls to prevent spamming server - wait 500ms
+
+    //TODO: Make vote count also optimistically update before API call
+
     // Set vote in progress flag at beginning of voting process
     _isVoteInProgress = true;
 
