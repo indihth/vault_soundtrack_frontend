@@ -18,11 +18,11 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
   void initState() {
     super.initState();
 
-    // Listen to session status changes on first load of widget
-    final sessionState = Provider.of<SessionState>(context, listen: false);
-    sessionState.listenToSessionStatus(sessionState.sessionId);
+    // // Listen to session status changes on first load of widget --  NOT NEEDED DUE TO didChangeDependencies
+    // final sessionState = Provider.of<SessionState>(context, listen: false);
+    // sessionState.listenToSessionStatus(sessionState.sessionId);
 
-    print('session state active INIT: ${sessionState.isActive}');
+    // print('session state active INIT: ${sessionState.isActive}');
   }
 
   // Flutter lifecycle method - Runs after initState, when dependencies change and before build()
