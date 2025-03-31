@@ -1,11 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
-import 'package:vault_soundtrack_frontend/services/voting.services.dart';
-import 'package:vault_soundtrack_frontend/state/session_state.dart';
-import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 import 'package:vault_soundtrack_frontend/widgets/vote_icon.dart';
+import 'package:vault_soundtrack_frontend/mixins/voting_mixin.dart';
 
 /// Shows song details including artwork, name, artist, album, and when it was played
 class TrackCard extends StatefulWidget {
@@ -21,137 +18,21 @@ class TrackCard extends StatefulWidget {
   State<TrackCard> createState() => _TrackCardState();
 }
 
-class _TrackCardState extends State<TrackCard> {
+class _TrackCardState extends State<TrackCard> with VotingMixin {
   final userId = FirebaseAuth.instance.currentUser?.uid;
-  late bool isUpVoted;
-  late bool isDownVoted;
-
-  bool isUpVoteLoading = false;
-  bool isDownVoteLoading = false;
 
   @override
   void initState() {
     super.initState();
 
-    // State variables for voting
-    isUpVoted = widget.item.hasUserUpVoted(userId); // check if user has upvoted
-    isDownVoted =
-        widget.item.hasUserDownVoted(userId); // check if user has downvoted
-  }
-
-  void _addUpVote() {
-    setState(() {
-      isUpVoted = true;
-      // upVotes += 1;
-    });
-  }
-
-  void _removeUpVote() {
-    setState(() {
-      isUpVoted = false;
-      // upVotes -= 1;
-    });
-  }
-
-  void _addDownVote() {
-    setState(() {
-      isDownVoted = true;
-      // downVotes += 1;
-    });
-  }
-
-  void _removeDownVote() {
-    setState(() {
-      isDownVoted = false;
-      // downVotes -= 1;
-    });
-  }
-
-  // handle optamistic UI update on voting
-  void updateVoteUI(String voteType) async {
-    // update vote state
-
-    // Handle vote and count logic
-    if (voteType == 'up') {
-      if (isUpVoted) {
-        // If state is already upvoted, remove upvote
-        _removeUpVote();
-        isUpVoteLoading = true;
-      } else if (isDownVoted) {
-        // If state is downvoted, remove downvote and add upvote
-        _addUpVote();
-        _removeDownVote();
-        isUpVoteLoading = true;
-        isDownVoteLoading = true;
-      } else {
-        // If state is not upvoted or downvoted, add upvote
-        _addUpVote();
-        isUpVoteLoading = true;
-      }
-
-      // Handle downvote logic
-    } else if (voteType == 'down') {
-      if (isDownVoted) {
-        _removeDownVote();
-        isDownVoteLoading = true;
-      } else if (isUpVoted) {
-        _addDownVote();
-        _removeUpVote();
-        isUpVoteLoading = true;
-        isDownVoteLoading = true;
-      } else {
-        _addDownVote();
-        isDownVoteLoading = true;
-      }
-    }
-  }
-
-// handle upvote with voting services
-  void handleVote(context, track, voteType) async {
-    // Store original state for potential revert
-    final originalIsUpVoted = isUpVoted;
-    final originalIsDownVoted = isDownVoted;
-
-    // update UI optimistically - show the vote before it's confirmed by server
-    updateVoteUI(voteType);
-
-    // Need to compare db with state to confirm - icons is filled when it shouldn't be
-
-    try {
-      final sessionState = Provider.of<SessionState>(context, listen: false);
-      if (sessionState.sessionId.isEmpty) {
-        throw Exception('Session ID state is empty');
-      }
-
-      // Display loading indicator for voteCount text until response is received
-
-      await VotingServices.handleVote(sessionState.sessionId,
-          sessionState.playlistId, track.trackId, voteType);
-
-      // Set loading state to false on success db update
-      setState(() {
-        isUpVoteLoading = false;
-        isDownVoteLoading = false;
-      });
-    } catch (e) {
-      // Revert UI states if voting fails
-      setState(() {
-        isUpVoted = originalIsUpVoted;
-        isDownVoted = originalIsDownVoted;
-        isUpVoteLoading = false;
-        isDownVoteLoading = false;
-      });
-
-      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
-      throw Exception('Failed to upvote song: $e');
-    }
+    // Initialize loading states for upvote and downvote
+    isUpVoted = widget.item.hasUserUpVoted(userId);
+    isDownVoted = widget.item.hasUserDownVoted(userId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      // is a card widget appropriate here?
-      // margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 0, // removes shadow
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
