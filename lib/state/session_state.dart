@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
+import 'package:vault_soundtrack_frontend/services/playlist_sync.services.dart';
 
 class SessionState extends ChangeNotifier {
   // The current session ID
@@ -14,6 +16,7 @@ class SessionState extends ChangeNotifier {
   String _hostDisplayName = '';
   bool _isHost = false;
   bool _isActive = false;
+  bool _isJoining = false; // Flag to indicate if the user is joining a session
 
   // Getters
   String get sessionId => _sessionId;
@@ -23,6 +26,7 @@ class SessionState extends ChangeNotifier {
   String get hostDisplayName => _hostDisplayName;
   bool get isHost => _isHost;
   bool get isActive => _isActive;
+  bool get isJoining => _isJoining;
 
   // Setup stream subscription to listen for changes in the session state
   StreamSubscription? _sessionStateSubscription;
@@ -139,6 +143,27 @@ class SessionState extends ChangeNotifier {
     return session;
   }
 
+  Future<void> joinExistingSession(String sessionId, String playlistId) async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) throw Exception('User not authenticated');
+
+      // Sync user's playlist with session
+      await PlaylistSyncServices.syncUserPlaylist(
+        sessionId: sessionId,
+        playlistId: playlistId,
+        userId: userId,
+      );
+
+      // Update session state
+      _sessionId = sessionId;
+      _playlistId = playlistId;
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Failed to join session: $e');
+    }
+  }
+
   // End session - use when the host ends the session
   Future<void> endSession(String sessionId) async {
     try {
@@ -200,6 +225,11 @@ class SessionState extends ChangeNotifier {
 
   void setIsActive(bool isActive) {
     _isActive = isActive;
+    notifyListeners();
+  }
+
+  void setIsJoining(bool isJoining) {
+    _isJoining = isJoining;
     notifyListeners();
   }
 }

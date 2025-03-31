@@ -29,9 +29,32 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   @override
   void initState() {
     super.initState();
+    _initializeSession();
+  }
 
-    // Get session state from the Provider
-    // final sessionState = Provider.of<SessionState>(context, listen: false);
+  Future<void> _initializeSession() async {
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+
+    try {
+      if (sessionState.isJoining) {
+        await sessionState.joinExistingSession(
+          sessionState.sessionId,
+          sessionState.playlistId,
+        );
+        // Show success message
+        UIHelpers.showSnackBar(context, 'Successfully joined session');
+      }
+
+      // Continue with regular session initialization
+      // ...existing initialization code...
+    } catch (e) {
+      UIHelpers.showSnackBar(
+        context,
+        'Failed to initialize session: ${e.toString()}',
+        isError: true,
+      );
+      Navigator.pop(context); // Return to previous screen on error
+    }
   }
 
   @override
