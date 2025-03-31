@@ -18,6 +18,7 @@ class TrackCard extends StatefulWidget {
   State<TrackCard> createState() => _TrackCardState();
 }
 
+// Voting logic handled in mixin
 class _TrackCardState extends State<TrackCard> with VotingMixin {
   final userId = FirebaseAuth.instance.currentUser?.uid;
 
