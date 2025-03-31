@@ -30,42 +30,48 @@ class SessionState extends ChangeNotifier {
   // Listen to session status changes in Firestore, indicate if host has started session
   void listenToSessionStatus(String sessionId) {
     // Cancel any existing subscription before creating a new one
-    _sessionStateSubscription?.cancel();
+    if (_sessionStateSubscription == null || this.sessionId != sessionId) {
+      // Cancel any existing subscription before creating a new one
+      _sessionStateSubscription?.cancel();
 
-    // Listen to the session changes in Firestore
-    _sessionStateSubscription = FirebaseFirestore.instance
-        .collection('sessions')
-        .doc(sessionId)
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.exists) {
-        final data = snapshot.data() as Map<String, dynamic>;
-        final status =
-            data['status'] ?? 'waiting'; // Default to 'waiting' if not set
+      // Set the session ID -
+      setSessionId(sessionId);
 
-        if (status == 'active' && !_isActive) {
-          // Session is now active
-          setIsActive(true);
+      // Listen to the session changes in Firestore
+      _sessionStateSubscription = FirebaseFirestore.instance
+          .collection('sessions')
+          .doc(sessionId)
+          .snapshots()
+          .listen((snapshot) {
+        if (snapshot.exists) {
+          final data = snapshot.data() as Map<String, dynamic>;
+          final status =
+              data['status'] ?? 'waiting'; // Default to 'waiting' if not set
 
-          // Check if the playlist ID exists then set it
-          if (data['playlistId'] != null) {
-            final playlistId = data['playlistId'] as String;
-            setPlaylistId(
-                playlistId); // needed for redirect to live session page
-          } else {
-            throw Exception(
-                'Playlist ID is null - cannot redirect to live session page');
+          if (status == 'active' && !_isActive) {
+            // Session is now active
+            setIsActive(true);
+
+            // Check if the playlist ID exists then set it
+            if (data['playlistId'] != null) {
+              final playlistId = data['playlistId'] as String;
+              setPlaylistId(
+                  playlistId); // needed for redirect to live session page
+            } else {
+              throw Exception(
+                  'Playlist ID is null - cannot redirect to live session page');
+            }
+
+            // Notify listeners of the change
+            notifyListeners();
+          } else if (status == 'ended' && _isActive) {
+            // Session has ended
+            setIsActive(false);
+            clearSessionState(); // Clear session state when the session ends
           }
-
-          // Notify listeners of the change
-          notifyListeners();
-        } else if (status == 'ended' && _isActive) {
-          // Session has ended
-          setIsActive(false);
-          clearSessionState(); // Clear session state when the session ends
         }
-      }
-    });
+      });
+    }
   }
 
   @override
@@ -73,6 +79,14 @@ class SessionState extends ChangeNotifier {
     // Cancel the subscription when the state is disposed
     _sessionStateSubscription?.cancel();
     super.dispose();
+  }
+
+  void stopListeningToSessionStatus() {
+    // Cancel the subscription when the state is disposed
+    _sessionStateSubscription?.cancel();
+
+    // Reset the subscription
+    _sessionStateSubscription = null;
   }
 
   Future<Map<String, dynamic>> createSession(
@@ -93,6 +107,9 @@ class SessionState extends ChangeNotifier {
       setSessionDescription(sessionDescription);
       setHostDisplayName(hostDisplayName);
       setIsHost(isHost);
+
+      // Start listener
+      listenToSessionStatus(sessionId);
 
       return session;
     } catch (e) {
@@ -116,6 +133,9 @@ class SessionState extends ChangeNotifier {
     setHostDisplayName(hostDisplayName);
     setIsHost(isHost);
 
+    // Start listener
+    listenToSessionStatus(sessionId);
+
     return session;
   }
 
@@ -123,8 +143,9 @@ class SessionState extends ChangeNotifier {
   Future<void> endSession(String sessionId) async {
     try {
       await PlaylistSessionServices.updateSessionStatus(sessionId, "ended");
+
       // Clear the session state after changing the status
-      // clearSessionState(); // Let the session clear when the listener detects the change
+      clearSessionState();
     } catch (e) {
       throw Exception('Failed to end session - $e');
     }
@@ -132,6 +153,10 @@ class SessionState extends ChangeNotifier {
 
   // Clear the session state - use when leaving a session
   void clearSessionState() {
+    // First stop listening to session status changes - avoids memory leaks and unnecessary updates
+    stopListeningToSessionStatus();
+
+    // Clear the session state
     _sessionId = '';
     _playlistId = '';
     _sessionName = '';

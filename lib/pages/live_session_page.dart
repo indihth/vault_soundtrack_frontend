@@ -44,8 +44,12 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     print('session state active didChanged: ${sessionState.isActive}');
 
     if (!sessionState.isActive) {
-      // Use addPostFrameCallback to ensure the navigation happens after the build is complete
-      // Otherwise potential error trying to navigate while the widget is still building
+      // Session is ended, stop listening before redirecting
+      sessionState.stopListeningToSessionStatus();
+
+      // Use addPostFrameCallback to ensure the navigation happens after the build is complete.
+      // otherwise potential error trying to navigate while the widget is still building
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/home');
       });
