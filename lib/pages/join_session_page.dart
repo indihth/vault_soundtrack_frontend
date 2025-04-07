@@ -22,19 +22,41 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
       // required options for the scanner
       );
 
+  late SessionState _sessionState; // Declare the session state variable
+  bool _isLoading =
+      false; // To display loading indicator when waiting for API response
+
   String? scanResult;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _sessionState = Provider.of<SessionState>(context, listen: false);
+  }
 
   Future<void> _handleTap(context) async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
       const sessionId = ApiConstants.sessionId;
-      Map<String, dynamic> joined =
-          await PlaylistSessionServices.joinPlaylistSession(sessionId);
+
+      Map<String, dynamic> joined = await _sessionState.joinSession(sessionId);
+
       if (joined['success']) {
         // check if the response is successful
-        Navigator.pushNamed(context, '/waiting-room');
-        print("joined session!!");
+        await Navigator.pushNamed(context, '/waiting-room');
+
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       // Handle error
       print('Failed to join session: $e');
       // Show error dialog
@@ -44,16 +66,26 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
 
   void _processScanResult(String sessionId) async {
     try {
-      final sessionState = Provider.of<SessionState>(context, listen: false);
+      // Display loading indicator while waiting
+      setState(() {
+        _isLoading = true;
+      });
 
-      Map<String, dynamic> joined = await sessionState.joinSession(sessionId);
+      Map<String, dynamic> joined = await _sessionState.joinSession(sessionId);
       print("inside process scan result: $sessionId");
 
       if (joined['success']) {
-        Navigator.pushNamed(context, '/waiting-room');
-        print("joined session!!");
+        await Navigator.pushNamed(context, '/waiting-room');
+
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
       // Handle error
       print('Failed to join session: $e');
       // Show error dialog
@@ -71,6 +103,11 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     return Scaffold(
       appBar: AppBar(),
       body: Center(
