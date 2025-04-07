@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:vault_soundtrack_frontend/services/database_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/playlist_header.dart';
 import 'package:vault_soundtrack_frontend/widgets/track_card.dart';
@@ -20,47 +22,97 @@ class LiveSessionPage extends StatefulWidget {
   State<LiveSessionPage> createState() => _LiveSessionPageState();
 }
 
-/// The state class for LiveSessionPage
-/// Manages the data and UI updates for the listening history
 class _LiveSessionPageState extends State<LiveSessionPage> {
-  // Future that will hold the list of listening history items when loaded
-  late Future<Playlist> _playlistFuture;
+  /// The state class for LiveSessionPage
 
-  // // Dummy playlist data for testing
-  // static final Playlist dummyPlaylist = Playlist(
-  //   title: 'My Awesome Playlist',
+  // Create _sessionState variable to access session state in multiple methods
+  late SessionState _sessionState;
 
-  //   image: 'https://example.com/playlist-cover.jpg',
-  //   users: ['Alice', 'Bob', 'Charlie'],
-  // );
+  // Hanles UI when ending session
+  bool _isEnding = false;
 
   @override
   void initState() {
     super.initState();
-    // Load the listening history when the widget is first created
-    _loadPlaylist();
+
+    _sessionState = Provider.of<SessionState>(context, listen: false);
+    // _initializeSession();
   }
 
-  /// Loads or reloads the listening history data from the service
-  /// Updates the state to trigger a UI rebuild with the new data
-  void _loadPlaylist() {
-    setState(() {
-      // Get sessionid from the Provider
-      final sessionState = Provider.of<SessionState>(context, listen: false);
-      print('sessionState.sessionId: ${sessionState.sessionId}');
+  Future<void> _initializeSession() async {
+    _sessionState = Provider.of<SessionState>(context, listen: false);
 
-      // Call the service to get listening history and update the future
-      _playlistFuture =
-          PlaylistSessionServices.loadPlaylist(sessionState.sessionId);
-    });
+    try {
+      if (_sessionState.isJoining) {
+        await _sessionState.joinExistingSession(
+          _sessionState.sessionId,
+          _sessionState.playlistId,
+        );
+        // Show success message
+        UIHelpers.showSnackBar(context, 'Successfully joined session');
+      }
+
+      // Continue with regular session initialization
+      // ...existing initialization code...
+    } catch (e) {
+      UIHelpers.showSnackBar(
+        context,
+        'Failed to initialize session: ${e.toString()}',
+        isError: true,
+      );
+      Navigator.pop(context); // Return to previous screen on error
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('session state active didChanged running');
+
+    // Check if session is ended and needs to redirect
+
+    if (!_sessionState.isActive) {
+      // Session is ended, stop listening before redirecting
+      _sessionState.stopListeningToSessionStatus();
+
+      // Clear session state
+      // _sessionState.clearSessionState();
+
+      // Use addPostFrameCallback to ensure the navigation happens after the build is complete.
+      // otherwise potential error trying to navigate while the widget is still building
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   Navigator.pushReplacementNamed(context, '/home').then((_) {
+      //     // reset _isEnding to false after navigation
+      //     setState(() {
+      //       _isEnding = false;
+      //     });
+      //   });
+      // });
+
+      // Navigate to home page
+      // navigateAndClearState();
+
+      // If session is ended, stop listening to session status
+      return;
+    }
+
+    final sessionId = _sessionState.sessionId;
+
+    // Is this needed?
+    // if (sessionId.isEmpty) {
+    //   throw Exception('Session ID state is empty');
+    // }
+    _sessionState.listenToSessionStatus(sessionId);
   }
 
   Future<void> handleSavePlaylist() async {
     try {
       // Get session id from the Provider
-      final sessionState = Provider.of<SessionState>(context, listen: false);
+      if (_sessionState.sessionId.isEmpty) {
+        throw Exception('Session ID state is empty');
+      }
       final success =
-          await PlaylistSessionServices.savePlaylist(sessionState.sessionId);
+          await PlaylistSessionServices.savePlaylist(_sessionState.sessionId);
       if (success) {
         // TODO: Update 'save' button to show 'saved'
 
@@ -70,27 +122,133 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       } else {
         UIHelpers.showSnackBar(context, 'Failed to save playlist',
             isError: true);
+        throw Exception('Failed to save playlist');
       }
     } catch (e) {
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Error saving playlist: $e');
     }
   }
 
-  void handleEndSession() {
-    // Implement end session functionality here
+  Future<void> navigateAndClearState() async {
+    try {
+      // // set _isEnding to true to show loading spinner
+      // setState(() {
+      //   _isEnding = true;
+      // });
+      // navigate first
+      await Navigator.pushReplacementNamed(context, '/home');
+
+      // only if navigation complete, clear state
+      _sessionState.clearSessionState();
+    } catch (e) {
+      // Handle any errors that occur during navigation
+      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Error navigating to home: $e');
+    } finally {
+      // Reset _isEnding to false after navigation
+      setState(() {
+        _isEnding = false;
+      });
+    }
+  }
+
+  void handleEndSession() async {
+    try {
+      // Close the dialog
+      Navigator.of(context).pop();
+
+      // set _isEnding to true to show loading spinner
+      setState(() {
+        _isEnding = true;
+      });
+
+      final sessionId = _sessionState.sessionId;
+
+      if (sessionId.isEmpty) {
+        throw Exception('Session ID state is empty');
+      }
+
+      await _sessionState.endSession(sessionId);
+
+      await navigateAndClearState();
+
+      //reset _isEnding to false after session ended
+      setState(() {
+        _isEnding = false;
+      });
+    } catch (e) {
+      // Reset _isEnding to false in case of error
+      setState(() {
+        _isEnding = false;
+      });
+
+      // Display error message to the user
+      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Error ending session: $e');
+    } finally {
+      // reset _isEnding
+    }
+  }
+
+  @override
+  void dispose() {
+    // Getting error calling an ancestor widget in the dispose method
+    // Cancel any active session state subscription when the widget is disposed
+
+    // Clear session state when widget is disposed, avoid 'no playlist ID' error
+    // _sessionState.clearSessionState();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get session state
+    final playlistId = _sessionState.playlistId;
+    final isHost = _sessionState.isHost;
+
+    if (_isEnding) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            DefaultTextStyle(
+              // required because rendering before Scaffold is built
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 14.0,
+              ),
+              child: Text('Ending session...'),
+            ),
+          ],
+        ),
+      );
+    } else
+
+    // Shows error message if no playlist Id is found but not when ending session
+    // (handles clearing session state more gracefully in the UI)
+    if (playlistId.isEmpty) {
+      return const Center(
+        child: DefaultTextStyle(
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14.0,
+            ),
+            child: Text('No playlist ID found')),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Hides automatically added back btn
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code),
             onPressed: () {
               // Get session ID from provider
-              final sessionId =
-                  Provider.of<SessionState>(context, listen: false).sessionId;
+              final sessionId = _sessionState.sessionId;
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -100,26 +258,14 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                     // version: QrVersions.auto,
                     size: 200.0,
                   ),
-                  // Image.network(
-                  //   'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=$sessionId',
-                  //   height: 200,
-                  //   width: 200,
-                  // ),
-                  actions: [
-                    TextButton(
-                      child: const Text('Close'),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
                 ),
               );
             },
           ),
         ],
       ),
-      body: FutureBuilder<Playlist>(
-        // FutureBuilder handles async data loading states
-        future: _playlistFuture,
+      body: StreamBuilder<Playlist>(
+        stream: _getPlaylistStream(playlistId),
         builder: (context, snapshot) {
           // Handle different states of the future
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -141,6 +287,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               child: Text('No listening history found'),
             );
           } else {
+            Playlist playlist = snapshot.data!;
+
             print(
                 'snapshot.data!.tracks.length: ${snapshot.data!.tracks.length}');
             // Build a scrollable list of history items when data is available
@@ -149,18 +297,17 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               child: Column(
                 children: [
                   PlaylistHeader(
-                    item: snapshot.data!,
+                    item: playlist,
+                    isHost: isHost,
                     handleEndSession: handleEndSession,
                     handleSavePlaylist: handleSavePlaylist,
                   ),
                   Expanded(
                     child: ListView.builder(
-                      // padding: const EdgeInsets.all(16.0),
-                      itemCount:
-                          snapshot.data!.tracks.length, // Also fixed itemCount
+                      itemCount: playlist.tracks.length, // Also fixed itemCount
                       itemBuilder: (context, index) {
-                        final item = snapshot.data!.tracks[index];
-                        return TrackCard(item: item);
+                        Track track = playlist.tracks[index];
+                        return TrackCard(item: track);
                       },
                     ),
                   ),
@@ -171,5 +318,32 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
         },
       ),
     );
+  }
+
+  // Stream to listen to playlist changes from Firestore
+  Stream<Playlist> _getPlaylistStream(String playlistId) {
+    // final databaseServices =
+    //     DatabaseServices(); // Create an instance of DatabaseServices
+// Check if playlistId is empty or null
+    if (playlistId.isEmpty) {
+      // Return an empty stream that emits an error
+      return Stream.error('Invalid playlist ID');
+    }
+
+    try {
+      return FirebaseFirestore.instance
+          .collection('playlists')
+          .doc(playlistId)
+          .snapshots()
+          .map((snapshot) {
+        if (snapshot.exists) {
+          return Playlist.fromFirestore(snapshot);
+        }
+        throw Exception('Playlist not found');
+      });
+    } catch (e) {
+      print('Error creating stream: $e');
+      return Stream.error('Failed to create playlist stream: $e');
+    }
   }
 }

@@ -18,8 +18,16 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
+  bool _isLoading =
+      false; // To display loading indicator when waiting for API response
+
   handleStartSession() async {
     try {
+      // Display loading indicator while waiting
+      setState(() {
+        _isLoading = true;
+      });
+
       // Get the SessionState from the Provider as an instance
       final sessionState = Provider.of<SessionState>(context, listen: false);
       // make the API request and store in response
@@ -30,12 +38,20 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
 
       // if the response is successful, navigate to the waiting room
       if (response["success"]) {
-        Navigator.pushNamed(context, '/waiting-room');
+        await Navigator.pushNamed(context, '/waiting-room');
+
+        // set state after navigation to avoid unnecessary rebuilds and flashing of previous screen
+        setState(() {
+          _isLoading = false;
+        });
       } else {
         UIHelpers.showSnackBar(context, 'Failed to create session',
             isError: true);
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       UIHelpers.showSnackBar(context, 'Failed to create session - $e',
           isError: true);
       print(
@@ -45,6 +61,12 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
 
   @override
   Widget build(BuildContext context) {
+    // If waiting on API response, display loading indicator
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     return Scaffold(
       appBar: AppBar(),
       body: Center(

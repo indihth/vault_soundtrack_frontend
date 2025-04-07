@@ -1,41 +1,105 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vault_soundtrack_frontend/models/track.dart';
 
 class Playlist {
-  // final int id;
   final String title;
-  // final List<String> users;
-  // final String image;
   final String description;
-  // final Map<String, String> externaUrls;
-  // final List<Map<String, String?>> images;
-  // final Map<String, String> owner;
   final List<Track> tracks;
 
-  Playlist({
-    //   required this.id,
-    required this.title,
-    // required this.users,
-    // required this.image,
-    required this.description,
-    // required this.externaUrls,
-    // required this.images,
-    // required this.owner
-    required this.tracks,
-  });
+  Playlist(
+      {required this.title, required this.description, required this.tracks});
 
-  // Factory method to convert JSON into a Playlist object
-  factory Playlist.fromJson(Map<String, dynamic> json) {
+  factory Playlist.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    Map<String, Track> tracksMap = {};
+
+    // Process the tracks map where trackId is the key
+    if (data['tracks'] != null && data['tracks'] is Map) {
+      // Convert each entry in the tracks map to a Track object
+      (data['tracks'] as Map<String, dynamic>).forEach((trackId, trackData) {
+        // Make sure trackData includes the trackId
+        if (trackData is Map<String, dynamic>) {
+          Map<String, dynamic> trackWithId = {
+            ...trackData,
+            'trackId': trackId,
+          };
+          tracksMap[trackId] = Track.fromMap(trackWithId);
+        }
+      });
+    }
+
+    // Get track order from API
+    List<String> order =
+        data['trackOrder'] != null ? List<String>.from(data['trackOrder']) : [];
+
+    // Create ordered tracks list based on trackOrder
+    List<Track> orderedTracks = [];
+    for (String id in order) {
+      if (tracksMap.containsKey(id)) {
+        orderedTracks.add(tracksMap[id]!);
+      }
+    }
+
+    // If some tracks aren't in the order, add them at the end
+    if (tracksMap.isNotEmpty) {
+      for (var trackId in tracksMap.keys) {
+        if (!order.contains(trackId)) {
+          orderedTracks.add(tracksMap[trackId]!);
+        }
+      }
+    }
+
     return Playlist(
-      // id: json['id'],
-      title: json['title'],
-      // users: json['users'],
-      // image: json['image'],
-      description: json['description'],
-      // externaUrls: json['external_urls'],
-      // images: json['images'],
-      // owner: json['owner'],
-      tracks:
-          (json['tracks'] as List).map((item) => Track.fromJson(item)).toList(),
+      title: data['title'] ?? '',
+      description: data['description'] ?? '',
+      tracks: orderedTracks,
     );
   }
+
+  // factory Playlist.fromJson(Map<String, dynamic> json) {
+  //   // Create a map to store tracks by ID for quick lookup
+  //   Map<String, Track> tracksMap = {};
+
+  //   // Process the tracks map where trackId is the key
+  //   if (json['tracks'] != null && json['tracks'] is Map) {
+  //     // Convert each entry in the tracks map to a Track object
+  //     (json['tracks'] as Map<String, dynamic>).forEach((trackId, trackData) {
+  //       // Make sure trackData includes the trackId
+  //       if (trackData is Map<String, dynamic>) {
+  //         Map<String, dynamic> trackWithId = {
+  //           ...trackData,
+  //           'trackId': trackId,
+  //         };
+  //         tracksMap[trackId] = Track.fromJson(trackWithId);
+  //       }
+  //     });
+  //   }
+
+  //   // Get track order from API
+  //   List<String> order =
+  //       json['trackOrder'] != null ? List<String>.from(json['trackOrder']) : [];
+
+  //   // Create ordered tracks list based on trackOrder
+  //   List<Track> orderedTracks = [];
+  //   for (String id in order) {
+  //     if (tracksMap.containsKey(id)) {
+  //       orderedTracks.add(tracksMap[id]!);
+  //     }
+  //   }
+
+  //   // If some tracks aren't in the order, add them at the end
+  //   if (tracksMap.isNotEmpty) {
+  //     for (var trackId in tracksMap.keys) {
+  //       if (!order.contains(trackId)) {
+  //         orderedTracks.add(tracksMap[trackId]!);
+  //       }
+  //     }
+  //   }
+
+  //   return Playlist(
+  //     title: json['title'] ?? '',
+  //     description: json['description'] ?? '',
+  //     tracks: orderedTracks,
+  //   );
+  // }
 }

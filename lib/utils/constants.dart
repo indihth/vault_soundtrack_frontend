@@ -7,7 +7,7 @@ class ApiConstants {
   static const String baseUrl = 'https://qcch2jjf-3050.euw.devtunnels.ms/api';
 
   // temp hardcode sessionId
-  static const String sessionId = "zSWMPbpbr3Yre5R4z2hI";
+  static const String sessionId = "03cLyzNebQc5FeVpRGms";
   // static const String sessionId = "eM4zvPgXFi0goK1XNnvq";
 
   // Toggle this to switch between mock and real data

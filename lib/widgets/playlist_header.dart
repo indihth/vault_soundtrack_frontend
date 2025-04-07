@@ -5,11 +5,36 @@ class PlaylistHeader extends StatelessWidget {
   final VoidCallback handleSavePlaylist;
   final VoidCallback handleEndSession;
   final Playlist item;
+  final bool isHost;
   const PlaylistHeader(
       {super.key,
       required this.item,
+      required this.isHost,
       required this.handleSavePlaylist,
       required this.handleEndSession});
+
+  // Confirms if the user wants to end the session
+  void _confirmEndSession(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('End Session'),
+          content: const Text('Are you sure you want to end the session?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Close the dialog
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: handleEndSession,
+              child: const Text('End Session'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,22 +52,6 @@ class PlaylistHeader extends StatelessWidget {
                 color: Colors.grey[300],
                 child: const Icon(Icons.music_note, color: Colors.grey),
               ),
-              // child: Image.network(
-              //   item.image,
-              //   width: 126,
-              //   height: 126,
-              //   fit: BoxFit.cover,
-              //   // Handle image loading errors gracefully
-              //   errorBuilder: (context, error, stackTrace) {
-              //     // If image loading fails, show a placeholder
-              //     return Container(
-              //       width: 126,
-              //       height: 126,
-              //       color: Colors.grey[300],
-              //       child: const Icon(Icons.music_note, color: Colors.grey),
-              //     );
-              //   },
-              // ),
             ),
             const SizedBox(width: 20),
             Column(
@@ -64,13 +73,6 @@ class PlaylistHeader extends StatelessWidget {
                     fontSize: 14.0,
                   ),
                 ),
-                // Text(
-                //   item.users.join(', '),
-                //   style: const TextStyle(
-                //     color: Colors.grey,
-                //     fontSize: 14.0,
-                //   ),
-                // ),
               ],
             ),
           ],
@@ -90,12 +92,18 @@ class PlaylistHeader extends StatelessWidget {
                     color: Theme.of(context).colorScheme.tertiary),
               ),
             ),
-            const SizedBox(width: 20),
-            // Add a button to shuffle the playlist
-            ElevatedButton(
-              onPressed: handleEndSession,
-              child: const Text('End Session'),
-            ),
+            if (isHost) ...[
+              // Only host can end the session
+              const SizedBox(width: 20),
+              // Add a button to shuffle the playlist
+              ElevatedButton(
+                onPressed: () {
+                  _confirmEndSession(context);
+                },
+                // onPressed: handleEndSession,
+                child: const Text('End Session'),
+              ),
+            ]
           ],
         )
       ],

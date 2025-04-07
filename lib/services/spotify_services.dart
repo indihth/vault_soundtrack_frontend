@@ -73,7 +73,7 @@ class SpotifyServices {
       );
 
       if (response.statusCode == 200) {
-        return Playlist.fromJson(json.decode(response.body));
+        return Playlist.fromFirestore(json.decode(response.body));
       } else {
         throw Exception('Failed to get playlist');
       }
@@ -125,6 +125,7 @@ class SpotifyServices {
           : throw Exception('User token not available');
 
       // start the Spotify authentication flow using flutter_web_auth package, passsing userToken as query parameter
+
       final result = await FlutterWebAuth2.authenticate(
         url: '${ApiConstants.baseUrl}/spotify/login?token=$encodedUserToken',
         callbackUrlScheme: "spotifyauth",

@@ -46,47 +46,7 @@ class PlaylistSessionServices {
     }
   }
 
-  // Get all playlist sessions for a user (host)
-  static Future<List<UserProfile>> getSessionUsers() async {
-    // await user id token
-    final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    const sessionId = ApiConstants.sessionId;
-
-    try {
-      // Get users in current session
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/playlist-sessions/$sessionId/users'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $userToken',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        print('Got users response: ${response.body}');
-
-        final Map<String, dynamic> responseData = json.decode(response.body);
-
-        final Map<String, dynamic> usersJson = responseData['data'];
-
-        List<UserProfile> users = [];
-        usersJson.forEach((userId, userData) {
-          // Add the userId to the userData map
-          Map<String, dynamic> userDataWithId = {...userData, 'userId': userId};
-          users.add(UserProfile.fromJson(userDataWithId));
-        });
-
-        return users;
-      } else {
-        throw Exception(
-            'Failed to get users from session: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Failed to get users from session: $e');
-    }
-  }
-
-  static Future<Playlist> loadPlaylist(String sessionId) async {
+  static Future<String> startPlaylistSession(String sessionId) async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       // const sessionId = ApiConstants.sessionId;
@@ -104,14 +64,15 @@ class PlaylistSessionServices {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
-        if (responseData['data'] == null) {
+        print('Created playlist: $responseData');
+        if (responseData['data']['playlistId'] == null) {
           throw Exception('No playlist data received from server');
         }
 
-        final playlist = Playlist.fromJson(responseData['data']);
+        // final playlist = Playlist.fromFirestore(responseData['data']);
         // Debug print the created playlist
-        print('Created playlist: $playlist');
-        return playlist;
+        print('Created playlist: $responseData');
+        return responseData['data']['playlistId'];
       } else {
         throw Exception(
             'Failed to get playlist: ${response.statusCode}, message: ${response.body}');
@@ -120,6 +81,37 @@ class PlaylistSessionServices {
       print('Error loading playlist: $e');
       print('Stack trace: $stackTrace');
       throw Exception('Failed to create base playlist: $e');
+    }
+  }
+
+  // Update session status
+  static Future<Map<String, dynamic>> updateSessionStatus(
+      String sessionId, String status) async {
+    try {
+      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      // const sessionId = ApiConstants.sessionId;
+
+      final response = await http.put(
+        Uri.parse(
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/update-status'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $userToken',
+        },
+        body: json.encode({'status': status}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Updated session status to $status');
+
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return {"success": true, "status": responseData['status']};
+      } else {
+        throw Exception(
+            'Failed to update session status: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to update session status: $e');
     }
   }
 
