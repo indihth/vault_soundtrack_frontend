@@ -170,12 +170,13 @@ class SessionState extends ChangeNotifier {
   }
 
   // End session - use when the host ends the session
-  Future<void> endSession(String sessionId) async {
+  Future<Map<String, dynamic>> endSession(String sessionId) async {
     try {
       await PlaylistSessionServices.updateSessionStatus(sessionId, "ended");
 
-      // Clear the session state after changing the status
-      clearSessionState();
+      // Clear the session state after changing the status - BUG: causing 'no playlistId' onscreen error
+      // clearSessionState();
+      return {'status': 'ended'};
     } catch (e) {
       throw Exception('Failed to end session - $e');
     }
@@ -194,7 +195,7 @@ class SessionState extends ChangeNotifier {
       setSessionName(data['sessionName'] ?? '');
       setSessionDescription(data['description'] ?? '');
       setHostDisplayName(data['hostDisplayName'] ?? '');
-      setIsHost(false); // Set for testing
+      setIsHost(true); // Set for testing
 
       // For joining directly to the live session page
       setPlaylistId(data['playlistId'] ?? '');

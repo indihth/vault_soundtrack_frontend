@@ -85,7 +85,7 @@ class PlaylistSessionServices {
   }
 
   // Update session status
-  static Future<void> updateSessionStatus(
+  static Future<Map<String, dynamic>> updateSessionStatus(
       String sessionId, String status) async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -103,6 +103,9 @@ class PlaylistSessionServices {
 
       if (response.statusCode == 200) {
         print('Updated session status to $status');
+
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return {"success": true, "status": responseData['status']};
       } else {
         throw Exception(
             'Failed to update session status: ${response.statusCode}');
