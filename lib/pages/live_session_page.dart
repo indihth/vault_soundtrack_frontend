@@ -242,6 +242,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     }
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Hides automatically added back btn
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code),
@@ -257,17 +258,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                     // version: QrVersions.auto,
                     size: 200.0,
                   ),
-                  // Image.network(
-                  //   'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=$sessionId',
-                  //   height: 200,
-                  //   width: 200,
-                  // ),
-                  actions: [
-                    TextButton(
-                      child: const Text('Close'),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
                 ),
               );
             },
