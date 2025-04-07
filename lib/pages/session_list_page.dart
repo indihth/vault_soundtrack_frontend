@@ -12,16 +12,7 @@ class SessionListPage extends StatelessWidget {
       BuildContext context, DocumentSnapshot session) async {
     try {
       final sessionState = Provider.of<SessionState>(context, listen: false);
-      final data = session.data() as Map<String, dynamic>;
-
-      // Load session data into state
-      sessionState.setSessionId(session.id);
-      sessionState.setSessionName(data['sessionName'] ?? '');
-      sessionState.setSessionDescription(data['description'] ?? '');
-      sessionState.setPlaylistId(data['playlistId'] ?? '');
-      sessionState.setHostDisplayName(data['hostDisplayName'] ?? '');
-      sessionState.setIsActive(true); // Set for testing
-      sessionState.setIsHost(false); // Set for testing
+      await sessionState.reOpenSession(session.id, session);
 
       // Navigate to live session
       Navigator.pushReplacementNamed(context, '/live-session');

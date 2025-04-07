@@ -130,7 +130,6 @@ class SessionState extends ChangeNotifier {
     final sessionDescription = session['data']['description'];
     final hostDisplayName = session['data']['hostDisplayName'];
     final isHost = false; // The user who joins the session is not the host
-    // Set the session ID
     setSessionName(sessionName);
     setSessionId(sessionId);
     setSessionDescription(sessionDescription);
@@ -142,6 +141,9 @@ class SessionState extends ChangeNotifier {
 
     return session;
   }
+
+  // Rejoin session
+  // Future<void> rejoinSession(String sessionId)
 
   Future<void> joinExistingSession(String sessionId, String playlistId) async {
     try {
@@ -159,6 +161,9 @@ class SessionState extends ChangeNotifier {
       _sessionId = sessionId;
       _playlistId = playlistId;
       notifyListeners();
+
+      // Start listener
+      listenToSessionStatus(sessionId);
     } catch (e) {
       throw Exception('Failed to join session: $e');
     }
@@ -173,6 +178,32 @@ class SessionState extends ChangeNotifier {
       clearSessionState();
     } catch (e) {
       throw Exception('Failed to end session - $e');
+    }
+  }
+
+  // Re-open session
+  Future<void> reOpenSession(String sessionId, DocumentSnapshot session) async {
+    try {
+      await PlaylistSessionServices.updateSessionStatus(sessionId, 'active');
+
+      // Update session state
+      final data = session.data() as Map<String, dynamic>;
+
+      // Load new session data into state
+      setSessionId(session.id);
+      setSessionName(data['sessionName'] ?? '');
+      setSessionDescription(data['description'] ?? '');
+      setHostDisplayName(data['hostDisplayName'] ?? '');
+      setIsHost(false); // Set for testing
+
+      // For joining directly to the live session page
+      setPlaylistId(data['playlistId'] ?? '');
+      setIsActive(true);
+
+      // Start listener
+      listenToSessionStatus(sessionId);
+    } catch (e) {
+      throw Exception('Failed to re-open session - $e');
     }
   }
 
