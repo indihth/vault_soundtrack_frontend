@@ -191,6 +191,34 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     }
   }
 
+  // Sort tracks
+  List<Track> sortTracks(List<Track> tracks) {
+    // Sort the tracks by up votes in descending order
+    final sortedTracks = List<Track>.from(tracks); // creates a copy of the list
+
+    // calculate total votes for each track
+
+    sortedTracks.sort((a, b) {
+      // sort by total votes (upvotes - downvotes) in descending order
+      int voteComparison =
+          (b.upVotes - b.downVotes).compareTo(a.upVotes - a.downVotes);
+
+      // return comparison if votes are not equal (a = 2, b = 1)
+      if (voteComparison != 0) {
+        return voteComparison;
+      }
+
+      // TODO: push new voted track to top tracks with same vote
+      // keeps more recently voted tracks at the top
+      // would require a timestamp or last voted property
+
+      // If votes have equal value, sort by trackId in ascending order (stable sort, 2nd criteria)
+      return a.trackId.compareTo(b.trackId);
+    });
+
+    return sortedTracks;
+  }
+
   @override
   void dispose() {
     // Getting error calling an ancestor widget in the dispose method
@@ -289,13 +317,10 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
           } else {
             Playlist playlist = snapshot.data!;
 
-            // Sort the playlist tracks by up votes in descending order
-            playlist.tracks.sort(
-                (trackA, trackB) => trackB.upVotes.compareTo(trackA.upVotes));
+            // create a sorted copy of the tracks list
+            List<Track> sortedTracks = sortTracks(playlist.tracks);
 
-            print('Playlist tracks: ${playlist.tracks}');
-
-            // Build a scrollable list of history items when data is available
+            // builds a scrollable list of history items
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -308,9 +333,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: playlist.tracks.length, // Also fixed itemCount
+                      itemCount: sortedTracks.length, // Also fixed itemCount
                       itemBuilder: (context, index) {
-                        Track track = playlist.tracks[index];
+                        Track track = sortedTracks[index];
                         return TrackCard(
                             // Use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
                             key: ObjectKey(track.trackId),
