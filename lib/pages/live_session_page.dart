@@ -289,8 +289,12 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
           } else {
             Playlist playlist = snapshot.data!;
 
-            print(
-                'snapshot.data!.tracks.length: ${snapshot.data!.tracks.length}');
+            // Sort the playlist tracks by up votes in descending order
+            playlist.tracks.sort(
+                (trackA, trackB) => trackB.upVotes.compareTo(trackA.upVotes));
+
+            print('Playlist tracks: ${playlist.tracks}');
+
             // Build a scrollable list of history items when data is available
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -307,7 +311,10 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                       itemCount: playlist.tracks.length, // Also fixed itemCount
                       itemBuilder: (context, index) {
                         Track track = playlist.tracks[index];
-                        return TrackCard(item: track);
+                        return TrackCard(
+                            // Use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
+                            key: ObjectKey(track.trackId),
+                            item: track);
                       },
                     ),
                   ),
