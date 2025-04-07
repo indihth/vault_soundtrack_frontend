@@ -29,7 +29,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   @override
   void initState() {
     super.initState();
-    _initializeSession();
+    // _initializeSession();
   }
 
   Future<void> _initializeSession() async {
@@ -67,15 +67,16 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     print('session state active didChanged: ${sessionState.isActive}');
 
     if (!sessionState.isActive) {
-      // Session is ended, stop listening before redirecting
-      sessionState.stopListeningToSessionStatus();
-
       // Use addPostFrameCallback to ensure the navigation happens after the build is complete.
       // otherwise potential error trying to navigate while the widget is still building
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/home');
       });
+
+      // Session is ended, stop listening before redirecting OR redirect first then stop listening
+      // Old method results in a flash of 'no playlist ID found' message
+      sessionState.stopListeningToSessionStatus();
 
       // If session is ended, stop listening to session status
       return;

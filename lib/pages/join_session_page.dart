@@ -102,12 +102,7 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
 
                         // Check if the scanned value matches a valid session ID format, 20 character string
                         if (sessionId.length == 20) {
-                          // if (scannedUrl.startsWith(
-                          //     'sample://open.my.app/#/join-session/')) {
-                          // final sessionId = "eM4zvPgXFi0goK1XNnvq";
-                          print('Scanned URL: $sessionId');
-
-                          // You can also pause scanning after detecting a code
+                          // Pause scanning after detecting a code
                           cameraController.stop();
 
                           showDialog(

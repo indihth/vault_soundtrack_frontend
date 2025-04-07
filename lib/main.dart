@@ -21,6 +21,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+// Wrap the app in a ChangeNotifierProvider to provide the SessionState
+  runApp(
+    ChangeNotifierProvider(
+        create: (context) => SessionState(), child: const MyApp()),
+  );
+
+// NEEDED? NO
   // initialize AppLinks
   final appLinks = AppLinks();
 
@@ -28,10 +35,6 @@ void main() async {
   final sub = appLinks.uriLinkStream.listen((Uri uri) {
     print('Received uri: ${uri.toString()}');
   });
-
-// Wrap the app in a ChangeNotifierProvider to provide the SessionState
-  runApp(ChangeNotifierProvider(
-      create: (context) => SessionState(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

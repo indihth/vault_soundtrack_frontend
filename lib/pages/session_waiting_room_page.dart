@@ -32,7 +32,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
     super.didChangeDependencies();
     print('session state active didChanged running');
 
-    // Check if session is active and need to redirect
+    // Check if session is active and needs to redirect
     final sessionState = Provider.of<SessionState>(context);
     sessionState.listenToSessionStatus(sessionState.sessionId);
 
