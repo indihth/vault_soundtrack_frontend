@@ -24,7 +24,13 @@ void main() async {
 // Wrap the app in a ChangeNotifierProvider to provide the SessionState
   runApp(
     ChangeNotifierProvider(
-        create: (context) => SessionState(), child: const MyApp()),
+        create: (context) => SessionState(),
+        child: GestureDetector(
+            onTap: () {
+              FocusManager.instance.primaryFocus
+                  ?.unfocus(); // dismiss keyboard when clicking outside of textfield
+            },
+            child: const MyApp())),
   );
 
 // NEEDED? NO

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
 import 'package:vault_soundtrack_frontend/helper/helper_functions.dart';
@@ -19,24 +20,35 @@ class _LoginPageState extends State<LoginPage> {
 
   final passwordController = TextEditingController();
 
+  bool isLoading = false; // loading indicator
+
   // sign user in method
   void login() async {
     // show loading indicator
-    showDialog(
-        context: context,
-        builder: (context) => const Center(child: CircularProgressIndicator()));
+    setState(() {
+      isLoading = true;
+    });
 
-    // try sign user in
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailController.text, password: passwordController.text);
+    // wraping in scheduler to ensures any animations complete before executing signin
+    // smoother ui rendering and no dropped frames
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      // try sign user in
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: emailController.text, password: passwordController.text);
 
-      // hide loading indicator
-      if (context.mounted) Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      Navigator.pop(context); // hide loading indicator
-      displayMessageToUser(context, e.code); // display error message to user
-    }
+        // hide loading indicator
+        setState(() {
+          isLoading = false;
+        });
+      } on FirebaseAuthException catch (e) {
+        // hide loading indicator
+        setState(() {
+          isLoading = false;
+        });
+        displayMessageToUser(context, e.code); // display error message to user
+      }
+    });
   }
 
   @override
