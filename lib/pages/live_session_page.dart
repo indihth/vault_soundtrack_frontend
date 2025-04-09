@@ -36,7 +36,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     super.initState();
 
     _sessionState = Provider.of<SessionState>(context, listen: false);
-    // _initializeSession();
   }
 
   Future<void> _initializeSession() async {
@@ -70,27 +69,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     print('session state active didChanged running');
 
     // Check if session is ended and needs to redirect
-
     if (!_sessionState.isActive) {
       // Session is ended, stop listening before redirecting
       _sessionState.stopListeningToSessionStatus();
-
-      // Clear session state
-      // _sessionState.clearSessionState();
-
-      // Use addPostFrameCallback to ensure the navigation happens after the build is complete.
-      // otherwise potential error trying to navigate while the widget is still building
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   Navigator.pushReplacementNamed(context, '/home').then((_) {
-      //     // reset _isEnding to false after navigation
-      //     setState(() {
-      //       _isEnding = false;
-      //     });
-      //   });
-      // });
-
-      // Navigate to home page
-      // navigateAndClearState();
 
       // If session is ended, stop listening to session status
       return;
@@ -98,10 +79,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
     final sessionId = _sessionState.sessionId;
 
-    // Is this needed?
-    // if (sessionId.isEmpty) {
-    //   throw Exception('Session ID state is empty');
-    // }
     _sessionState.listenToSessionStatus(sessionId);
   }
 
@@ -220,17 +197,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   }
 
   @override
-  void dispose() {
-    // Getting error calling an ancestor widget in the dispose method
-    // Cancel any active session state subscription when the widget is disposed
-
-    // Clear session state when widget is disposed, avoid 'no playlist ID' error
-    // _sessionState.clearSessionState();
-
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     // Get session state
     final playlistId = _sessionState.playlistId;
@@ -280,11 +246,27 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Session QR Code'),
-                  content: QrImageView(
-                    data: sessionId,
-                    // version: QrVersions.auto,
-                    size: 200.0,
+                  title: const Text(
+                    'Scan to join',
+                    textAlign: TextAlign.center,
+                  ),
+                  content: SizedBox(
+                    width: 180,
+                    height: 200,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        QrImageView(
+                          data: sessionId,
+                          // version: QrVersions.auto,
+                          backgroundColor: Colors.white,
+                          // padding: EdgeInsets.all(10),
+                          size: 170.0,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
