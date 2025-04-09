@@ -7,8 +7,8 @@ import 'package:vault_soundtrack_frontend/models/user_profile.dart';
 import '../utils/constants.dart';
 
 class PlaylistSessionServices {
-  // Get one playlist session
-  static Future<void> getPlaylistSession() async {
+  // Get all playlist sessions
+  static Future<void> getPlaylistSessionsByUser() async {
     // await user id token
     final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
 
@@ -162,6 +162,35 @@ class PlaylistSessionServices {
       return response.statusCode == 200; // Return true if successful
     } catch (e) {
       throw Exception('Failed to save playlist: $e');
+    }
+  }
+
+  // Updates playlist when users join while session if already active
+  static Future<void> syncPlaylist({
+    required String sessionId,
+    required String playlistId,
+    required String userId,
+  }) async {
+    try {
+      final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+
+      final response = await http.put(
+        Uri.parse(
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/join-session'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $userToken',
+        },
+        body: json.encode({
+          'userId': userId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to sync playlist');
+      }
+    } catch (e) {
+      throw Exception('Failed to sync playlist: $e');
     }
   }
 }

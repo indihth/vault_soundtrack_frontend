@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
-import 'package:vault_soundtrack_frontend/services/playlist_sync.services.dart';
 
 class SessionState extends ChangeNotifier {
   // The current session ID
@@ -151,7 +150,7 @@ class SessionState extends ChangeNotifier {
       if (userId == null) throw Exception('User not authenticated');
 
       // Sync user's playlist with session
-      await PlaylistSyncServices.syncUserPlaylist(
+      await PlaylistSessionServices.syncPlaylist(
         sessionId: sessionId,
         playlistId: playlistId,
         userId: userId,
