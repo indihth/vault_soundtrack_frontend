@@ -120,20 +120,28 @@ class SessionState extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> joinSession(String sessionId) async {
+  Future<Map<String, dynamic>> joinSession(String sessionId,
+      {bool isLateJoin = false}) async {
     // Join a session - use the Services class directly to join a session
-    final session =
-        await PlaylistSessionServices.joinPlaylistSession(sessionId);
+    final session = await PlaylistSessionServices.joinPlaylistSession(sessionId,
+        isLateJoin: isLateJoin);
 
     final sessionName = session['data']['sessionName'];
     final sessionDescription = session['data']['description'];
     final hostDisplayName = session['data']['hostDisplayName'];
-    final isHost = false; // The user who joins the session is not the host
+    final playlistId = session['data']['playlistId']; // for late joins only
+    final isHost = false;
     setSessionName(sessionName);
     setSessionId(sessionId);
     setSessionDescription(sessionDescription);
     setHostDisplayName(hostDisplayName);
     setIsHost(isHost);
+
+    // for late join only
+    if (isLateJoin && playlistId != null) {
+      setPlaylistId(playlistId);
+      setIsActive(true); // immediately set to active
+    }
 
     // Start listener
     listenToSessionStatus(sessionId);

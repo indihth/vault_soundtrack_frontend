@@ -18,9 +18,8 @@ class JoinSessionPage extends StatefulWidget {
 }
 
 class _JoinSessionPageState extends State<JoinSessionPage> {
-  final MobileScannerController cameraController = MobileScannerController(
-      // required options for the scanner
-      );
+  MobileScannerController? cameraController;
+  // final MobileScannerController cameraController = MobileScannerController();
 
   late SessionState _sessionState; // Declare the session state variable
   bool _isLoading =
@@ -33,6 +32,8 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
     super.initState();
 
     _sessionState = Provider.of<SessionState>(context, listen: false);
+    cameraController =
+        MobileScannerController(); // Start the camera when the widget is initialized
   }
 
   Future<void> _handleTap(context) async {
@@ -64,22 +65,55 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
     }
   }
 
-  void _processScanResult(String sessionId) async {
+  Map<String, dynamic> _parseQRCode(List<Barcode> barcodes) {
+    if (barcodes.isEmpty || barcodes.first.rawValue == null) {
+      throw Exception('Invalid QR code: No data found');
+    }
+
+    final String rawValue = barcodes.first.rawValue!;
+    final List<String> parts = rawValue.split(',');
+
+    if (parts.length != 2) {
+      throw Exception('Invalid QR code format: Expected sessionId,isLate');
+    }
+
+    final String sessionId = parts[0].trim();
+    final String isLateStr = parts[1].trim().toLowerCase();
+
+    // Validate sessionId length
+    if (sessionId.length != 20) {
+      throw Exception('Invalid session ID length');
+    }
+
+    // Parse isLate value
+    final bool isLateJoin = isLateStr == 'late';
+
+    return {
+      'sessionId': sessionId,
+      'isLateJoin': isLateJoin,
+    };
+  }
+
+  void _processScanResult(List<Barcode> barcodes) async {
     try {
       // Display loading indicator while waiting
       setState(() {
         _isLoading = true;
       });
 
-      Map<String, dynamic> joined = await _sessionState.joinSession(sessionId);
-      print("inside process scan result: $sessionId");
+      // parse the qr code to get sessionId and isLateJoin values
+      final {'sessionId': sessionId, 'isLateJoin': isLateJoin} =
+          _parseQRCode(barcodes);
 
-      if (joined['success']) {
+      // Join session
+      final result =
+          await _sessionState.joinSession(sessionId, isLateJoin: isLateJoin);
+
+      // navigate depending on isLateJoin or not
+      if (result['isLateJoin']) {
+        await Navigator.pushNamed(context, '/live-session');
+      } else {
         await Navigator.pushNamed(context, '/waiting-room');
-
-        setState(() {
-          _isLoading = false;
-        });
       }
     } catch (e) {
       setState(() {
@@ -97,7 +131,7 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
   @override
   void dispose() {
     // dispose of the controller when the widget is removed
-    cameraController.dispose();
+    cameraController?.dispose();
     super.dispose();
   }
 
@@ -130,50 +164,40 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
 
                     // handle detected barcode
                     if (barcodes.isNotEmpty) {
-                      final Barcode barcode = barcodes.first;
+                      cameraController?.stop();
 
-                      // Check if the barcode has a displayValue (the actual scanned content)
-                      if (barcodes.isNotEmpty &&
-                          barcodes.first.rawValue != null) {
-                        final String sessionId = barcodes.first.rawValue!;
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('QR Code Detected'),
+                          content: Text('Would you like to join the session?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                print('Joining session...');
 
-                        // Check if the scanned value matches a valid session ID format, 20 character string
-                        if (sessionId.length == 20) {
-                          // Pause scanning after detecting a code
-                          cameraController.stop();
-
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('QR Code Detected'),
-                              content: Text('Content: ${barcode.rawValue}'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    print('Joining session...');
-
-                                    _processScanResult(sessionId);
-                                    Navigator.pop(context);
-                                    // Resume scanning if you paused it
-                                    // cameraController.start();
-                                  },
-                                  child: const Text('Join Session'),
-                                ),
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      // Resume scanning if you paused it
-                                      cameraController.start();
-                                    },
-                                    child: const Text('Cancel'))
-                              ],
+                                _processScanResult(barcodes);
+                                Navigator.pop(context);
+                                // Resume scanning if you paused it
+                                // cameraController.start();
+                              },
+                              child: const Text('Join'),
                             ),
-                          );
-                        } else {
-                          print("Invalid QR code ##########################");
-                        }
-                      }
+                            TextButton(
+                                onPressed: () {
+                                  cameraController?.start();
+                                  Navigator.pop(context);
+                                  // Resume scanning if you paused it
+                                },
+                                child: const Text('Cancel'))
+                          ],
+                        ),
+                      );
+                    } else {
+                      print("Invalid QR code ##########################");
                     }
+                    //   }
+                    // }
                   },
                 ),
               ),

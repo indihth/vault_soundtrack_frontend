@@ -15,17 +15,22 @@ class PlaylistSessionServices {
     // session must be referenced in 'user' collection for host
   }
 
-  // Join a playlist session
-  static Future<Map<String, dynamic>> joinPlaylistSession(
-      String sessionId) async {
+  // Join a playlist session - dynamic handling for late joins too
+  static Future<Map<String, dynamic>> joinPlaylistSession(String sessionId,
+      {bool isLateJoin = false}) async {
     print("sessionId in services: $sessionId");
     // await user id token
 
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+
+      final endpoint = isLateJoin
+          ? 'join-late'
+          : 'join-session'; // determine endpoint needed base on isLateJoin
+
       final response = await http.put(
         Uri.parse(
-            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/join-session'),
+            '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/$endpoint'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $userToken',
@@ -36,10 +41,15 @@ class PlaylistSessionServices {
         print('Joined playlist session');
         // return true;
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return {"success": true, "data": responseData['session']};
+        return {
+          "success": true,
+          "data": responseData['session'],
+          "isLateJoin":
+              isLateJoin // used in join-session page to redirect correctly
+        };
       } else {
         throw Exception(
-            'Failed to join the playlist session: ${response.statusCode} and ${response.body}');
+            'Failed to ${isLateJoin ? 'late join' : 'join'} the playlist session: ${response.statusCode} and ${response.body}');
       }
     } catch (e) {
       throw Exception('Failed to join playlist session: $e');

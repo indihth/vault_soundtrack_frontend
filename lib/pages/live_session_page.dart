@@ -243,6 +243,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
             onPressed: () {
               // Get session ID from provider
               final sessionId = _sessionState.sessionId;
+              final qrCodeText = '$sessionId, late';
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -259,7 +260,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         QrImageView(
-                          data: sessionId,
+                          data: qrCodeText,
                           // version: QrVersions.auto,
                           backgroundColor: Colors.white,
                           // padding: EdgeInsets.all(10),
