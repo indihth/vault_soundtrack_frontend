@@ -71,18 +71,23 @@ mixin VotingMixin<T extends StatefulWidget> on State<T> {
         voteType,
       );
 
-      setState(() {
-        isUpVoteLoading = false;
-        isDownVoteLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isUpVoteLoading = false;
+          isDownVoteLoading = false;
+        });
+      }
     } catch (e) {
       // Revert to original states if the API call fails, reflects actual db state
-      setState(() {
-        isUpVoted = originalIsUpVoted;
-        isDownVoted = originalIsDownVoted;
-        isUpVoteLoading = false;
-        isDownVoteLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          // error - setState after dispose?
+          isUpVoted = originalIsUpVoted;
+          isDownVoted = originalIsDownVoted;
+          isUpVoteLoading = false;
+          isDownVoteLoading = false;
+        });
+      }
 
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
       throw Exception('Failed to vote on song: $e');
