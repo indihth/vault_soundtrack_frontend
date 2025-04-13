@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
 import 'package:vault_soundtrack_frontend/pages/home_page.dart';
 import 'package:vault_soundtrack_frontend/pages/session_list_page.dart';
+import 'package:vault_soundtrack_frontend/services/session_image_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/deep_link_listener.dart';
 import 'package:vault_soundtrack_frontend/firebase_options.dart';
@@ -23,14 +24,17 @@ void main() async {
 
 // Wrap the app in a ChangeNotifierProvider to provide the SessionState
   runApp(
-    ChangeNotifierProvider(
-        create: (context) => SessionState(),
-        child: GestureDetector(
-            onTap: () {
-              FocusManager.instance.primaryFocus
-                  ?.unfocus(); // dismiss keyboard when clicking outside of textfield
-            },
-            child: const MyApp())),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<SessionState>(
+          create: (context) => SessionState(),
+        ),
+        ChangeNotifierProvider<SessionImageServices>(
+          create: (context) => SessionImageServices(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
   );
 
 // NEEDED? NO
