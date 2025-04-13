@@ -28,6 +28,7 @@ class PlaylistSessionServices {
           ? 'join-late'
           : 'join-session'; // determine endpoint needed base on isLateJoin
 
+      print('isLateJoin: $isLateJoin');
       final response = await http.put(
         Uri.parse(
             '${ApiConstants.baseUrl}/playlist-sessions/$sessionId/$endpoint'),
@@ -39,8 +40,16 @@ class PlaylistSessionServices {
 
       if (response.statusCode == 200) {
         print('Joined playlist session');
+
         // return true;
         final Map<String, dynamic> responseData = json.decode(response.body);
+        print('Response data: $responseData');
+        if (responseData['session'] == null) {
+          throw Exception('Server returned empty session data');
+        }
+        if (responseData['alreadyJoined'] == true) {
+          print('Already joined session ************************************');
+        }
         return {
           "success": true,
           "data": responseData['session'],

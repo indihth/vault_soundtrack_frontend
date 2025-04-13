@@ -137,6 +137,8 @@ class SessionState extends ChangeNotifier {
     setHostDisplayName(hostDisplayName);
     setIsHost(isHost);
 
+    print('playlistId: ${session['data']}');
+
     // for late join only
     if (isLateJoin && playlistId != null) {
       setPlaylistId(playlistId);
