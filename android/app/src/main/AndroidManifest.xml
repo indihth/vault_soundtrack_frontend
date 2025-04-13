@@ -81,4 +81,11 @@
 
     <!-- Camera permission - needed for QR code scanning -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- For gallery access -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- For older Android versions -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
 </manifest>
