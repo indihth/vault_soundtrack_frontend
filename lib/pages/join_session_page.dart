@@ -73,20 +73,21 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
     final String rawValue = barcodes.first.rawValue!;
     final List<String> parts = rawValue.split(',');
 
-    if (parts.length != 2) {
-      throw Exception('Invalid QR code format: Expected sessionId,isLate');
+    // check if there's at least 1 string (sessionId)
+    if (parts.isEmpty) {
+      throw Exception('Invalid QR code format: Expected at least sessionId');
     }
 
     final String sessionId = parts[0].trim();
-    final String isLateStr = parts[1].trim().toLowerCase();
 
     // Validate sessionId length
     if (sessionId.length != 20) {
       throw Exception('Invalid session ID length');
     }
 
-    // Parse isLate value
-    final bool isLateJoin = isLateStr == 'late';
+    // the 'late' flag is not always included, if exists and is true set it to true
+    final bool isLateJoin =
+        parts.length > 1 ? parts[1].trim().toLowerCase() == 'late' : false;
 
     return {
       'sessionId': sessionId,
