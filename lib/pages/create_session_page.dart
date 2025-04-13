@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/services/session_image_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
+import 'package:vault_soundtrack_frontend/widgets/image_upload_btn.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
@@ -67,30 +69,50 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
         child: CircularProgressIndicator(),
       );
     }
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              MyTextField(
-                  hintText: "Playlist title",
-                  obscureText: false,
-                  controller: _titleController),
-              SizedBox(height: 16),
-              MyTextField(
-                  hintText: "Dscription",
-                  obscureText: false,
-                  controller: _descriptionController),
-              SizedBox(height: 16),
-              Text('Create Session Page'),
-              MyButton(
-                text: "Start session",
-                onTap: handleStartSession,
-              ),
-            ],
+    return ChangeNotifierProvider<SessionImageServices>(
+      create: (context) => SessionImageServices(),
+      child: Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Create Session',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16),
+                // pick image text
+                Text(
+                  'Pick an image for your session',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                ImageUploadBtn(),
+                MyTextField(
+                    hintText: "Playlist title",
+                    obscureText: false,
+                    controller: _titleController),
+                SizedBox(height: 16),
+                MyTextField(
+                    hintText: "Dscription",
+                    obscureText: false,
+                    controller: _descriptionController),
+                SizedBox(height: 16),
+                Text('Create Session Page'),
+                MyButton(
+                  text: "Start session",
+                  onTap: handleStartSession,
+                ),
+              ],
+            ),
           ),
         ),
       ),
