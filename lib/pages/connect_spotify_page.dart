@@ -47,7 +47,7 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
           ),
       body: Center(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -58,33 +58,41 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
                   fit: BoxFit.fitWidth,
                 ),
               ),
-              // const SizedBox(height: 20),
               Expanded(
                 flex: 3,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome ${userState.displayName}!\nConnect to Spotify',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 5),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Connect to \nSpotify',
+                            // 'Welcome ${userState.displayName}! \nConnect to \nSpotify',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "We'll gather your listening history to create a customized experience.",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          // const SizedBox(height: 50),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'We use your listening history to find you favourite songs',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
-                  ],
+                      SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
+                    ],
+                  ),
                 ),
               )
             ],

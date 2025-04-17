@@ -25,7 +25,7 @@ class SpotifyAuthButton extends StatelessWidget {
           //     color: Theme.of(context).colorScheme.inversePrimary),
           // SizedBox(width: 8),
           Text(
-            'Lets go',
+            'Lets go!',
             style: TextStyle(
                 color: Theme.of(context).colorScheme.inversePrimary,
                 fontWeight: FontWeight.bold),
