@@ -18,7 +18,7 @@ class UserServices {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['isConnected'] ?? false;
+        return data['spotifyConnected'] ?? false; // api returns boolean
       }
       return false;
     } catch (e) {

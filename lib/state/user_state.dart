@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vault_soundtrack_frontend/services/user_services.dart';
 
 class UserState extends ChangeNotifier {
   String _displayName = '';
@@ -19,7 +20,7 @@ class UserState extends ChangeNotifier {
   }
 
   Future<void> updateUserState() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser; // get the current user
     if (user != null) {
       setDisplayName(user.displayName ?? 'User');
       // Check Spotify connection
@@ -31,13 +32,10 @@ class UserState extends ChangeNotifier {
   Future<bool> checkSpotifyConnection() async {
     // Implement actual Spotify connection check here
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return false;
+      // make api call to check Spotify connection - returns boolean
+      final isConnected = await UserServices.checkSpotifyConnection();
 
-      final token = await user.getIdToken();
-      // Here you would typically make an API call to your backend
-      // to verify the Spotify connection status
-      return true; // Replace with actual implementation
+      return isConnected;
     } catch (e) {
       return false;
     }
