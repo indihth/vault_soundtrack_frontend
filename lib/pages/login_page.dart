@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/state/user_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
 import 'package:vault_soundtrack_frontend/helper/helper_functions.dart';
@@ -36,6 +38,13 @@ class _LoginPageState extends State<LoginPage> {
       try {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
+
+        // Update UserState after successful login
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          context.read<UserState>().setDisplayName(user.displayName ?? 'User');
+          await context.read<UserState>().updateUserState();
+        }
 
         // hide loading indicator
         setState(() {

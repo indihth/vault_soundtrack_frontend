@@ -16,6 +16,7 @@ import 'package:vault_soundtrack_frontend/pages/live_session_page.dart';
 import 'package:vault_soundtrack_frontend/pages/session_waiting_room_page.dart';
 import 'package:vault_soundtrack_frontend/theme/light_mode.dart';
 import 'package:vault_soundtrack_frontend/theme/dark_mode.dart';
+import 'package:vault_soundtrack_frontend/state/user_state.dart';
 
 void main() async {
   // initialize Firebase
@@ -31,6 +32,9 @@ void main() async {
         ),
         ChangeNotifierProvider<SessionImageServices>(
           create: (context) => SessionImageServices(),
+        ),
+        ChangeNotifierProvider<UserState>(
+          create: (context) => UserState(),
         ),
       ],
       child: const MyApp(),

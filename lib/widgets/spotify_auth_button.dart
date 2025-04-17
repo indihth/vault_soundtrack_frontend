@@ -12,7 +12,7 @@ class SpotifyAuthButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor:
             Theme.of(context).colorScheme.tertiary, // Spotify green
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
         ),
@@ -21,11 +21,11 @@ class SpotifyAuthButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.music_note,
-              color: Theme.of(context).colorScheme.inversePrimary),
-          SizedBox(width: 8),
+          // Icon(Icons.music_note,
+          //     color: Theme.of(context).colorScheme.inversePrimary),
+          // SizedBox(width: 8),
           Text(
-            'Connect to Spotify',
+            'Lets go',
             style: TextStyle(
                 color: Theme.of(context).colorScheme.inversePrimary,
                 fontWeight: FontWeight.bold),

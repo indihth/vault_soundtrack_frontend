@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/models/playlist.dart';
+import 'package:vault_soundtrack_frontend/state/user_state.dart';
 
 import '../models/listening_history_item.dart';
 import '../utils/constants.dart';
@@ -133,6 +135,9 @@ class SpotifyServices {
 
       // hide loading indicator
       UIHelpers.hideDialog(context);
+
+      // Update UserState
+      context.read<UserState>().setSpotifyConnection(true);
 
       // if authentication was successful
       // browser will auto close when redirected to callbackUrlScheme
