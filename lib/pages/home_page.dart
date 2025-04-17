@@ -44,8 +44,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   logout() async {
-    // sign user out
-    await FirebaseAuth.instance.signOut();
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      if (mounted) {
+        UIHelpers.showSnackBar(context, 'Error signing out', isError: true);
+      }
+    }
   }
 
   void showSnackBar(BuildContext context, String message) {
