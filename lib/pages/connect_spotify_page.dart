@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/state/user_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/spotify_auth_button.dart';
 
 class ConnectSpotifyPage extends StatefulWidget {
@@ -22,7 +24,12 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
       if (user != null) {
         // Refresh the user's Firebase token
         idToken = await user.getIdToken(true);
-        print("Spotify authentication successful for user: ${user.uid}");
+
+        // Update UserState
+        context.read<UserState>().setSpotifyConnection(true);
+
+        // Navigate to home after successful connection
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       print("Error in onAuthSuccess: $e");
@@ -31,19 +38,55 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userState = context.watch<UserState>();
+
     return Scaffold(
-      appBar: AppBar(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0.0
           // title: const Text('Create Session'),s
           ),
       body: Center(
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image(image: AssetImage('assets/images/vt_logo.png')),
-              SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
-              Text('Connect Spotify Page'),
+              Expanded(
+                flex: 2,
+                child: Image.asset(
+                  'assets/images/vt_logo.png',
+                  fit: BoxFit.fitWidth,
+                ),
+              ),
+              // const SizedBox(height: 20),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome ${userState.displayName}!\nConnect to Spotify',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'We use your listening history to find you favourite songs',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
+                  ],
+                ),
+              )
             ],
           ),
         ),
