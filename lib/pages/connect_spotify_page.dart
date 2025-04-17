@@ -41,6 +41,7 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image(image: AssetImage('assets/images/vt_logo.png')),
               SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
               Text('Connect Spotify Page'),
             ],
