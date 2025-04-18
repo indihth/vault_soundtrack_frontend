@@ -21,12 +21,38 @@ class AuthPage extends StatelessWidget {
             return FutureBuilder<bool>(
               future: UserServices.checkSpotifyConnection(),
               builder: (context, spotifySnapshot) {
+                if (spotifySnapshot.hasError) {
+                  // Handle the error state
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          spotifySnapshot.error.toString(),
+                          textAlign: TextAlign.center,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Refresh the page or retry the connection
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AuthPage(),
+                              ),
+                            );
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
                 if (spotifySnapshot.hasData) {
                   return spotifySnapshot.data!
                       ? HomePage() // if user is connected to Spotify, show homepage
                       : ConnectSpotifyPage(); // otherwise, show connect page
                 }
-                return const CircularProgressIndicator();
+                return const Center(child: CircularProgressIndicator());
               },
             );
           } else {
