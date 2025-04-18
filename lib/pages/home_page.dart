@@ -112,6 +112,13 @@ class _HomePageState extends State<HomePage> {
                       context, '/session-list'); // for development only
                 },
               ),
+              SizedBox(height: 20),
+              MyButton(
+                text: "User's Sessions",
+                onTap: () {
+                  Navigator.pushNamed(context, '/user-sessions');
+                },
+              ),
             ],
           ),
         ),

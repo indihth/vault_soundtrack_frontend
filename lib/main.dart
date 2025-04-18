@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
 import 'package:vault_soundtrack_frontend/pages/home_page.dart';
 import 'package:vault_soundtrack_frontend/pages/session_list_page.dart';
+import 'package:vault_soundtrack_frontend/pages/user_sessions_list_page.dart';
 import 'package:vault_soundtrack_frontend/services/session_image_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/deep_link_listener.dart';
@@ -73,6 +74,7 @@ class MyApp extends StatelessWidget {
               ),
           '/live-session': (context) => const LiveSessionPage(),
           '/session-list': (context) => const SessionListPage(),
+          '/user-sessions': (context) => const UserSessionsListPage(),
           '/connect-spotify': (context) => const ConnectSpotifyPage(),
           '/waiting-room': (context) => const SessionWaitingRoomPage(),
           // '/manage-spotify': (context) => const ManageSpotifyPage(),
