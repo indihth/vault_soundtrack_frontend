@@ -40,4 +40,15 @@ class UserState extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<void> createUserDocument(String username) async {
+    try {
+      final userData = await UserServices.creatUserDocument(username);
+      setDisplayName(userData['username'] ?? username);
+      setSpotifyConnection(false);
+    } catch (e) {
+      print('Error creating user document: $e');
+      rethrow;
+    }
+  }
 }

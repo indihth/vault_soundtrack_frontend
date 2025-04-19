@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/services/user_services.dart';
 import 'package:vault_soundtrack_frontend/state/user_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
@@ -22,24 +23,30 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordController = TextEditingController();
   final confirmPwController = TextEditingController();
 
+  late UserState _userState;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize UserState
+    _userState = Provider.of<UserState>(context, listen: false);
+  }
+
   // sign user in method
   void registerUser() async {
-    // show loading indicator
-    showDialog(
-        context: context,
-        builder: (context) => const Center(child: CircularProgressIndicator()));
-
     // check if passwords match
     if (passwordController.text != confirmPwController.text) {
       // if passwords don't match, show error message
-      Navigator.pop(context);
-
-      // display error message to user
       displayMessageToUser(context, "Passwords do not match, try again");
       return;
     }
-    // else {
-    // only if passwords match, try register user
+
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       // register user
       UserCredential userCredential = await FirebaseAuth.instance
@@ -50,22 +57,28 @@ class _RegisterPageState extends State<RegisterPage> {
       // Set display name
       await userCredential.user?.updateDisplayName(usernameController.text);
 
+      print("User registered: ${userCredential.user?.uid}");
+
+      // add user document to firestore
+      await _userState.createUserDocument(usernameController.text);
+
+      print("User document created");
+
       // Update UserState
-      context.read<UserState>().setDisplayName(usernameController.text);
+      _userState.setDisplayName(usernameController.text);
 
-      // hide loading indicator
-      Navigator.pop(context);
-
-      // Navigate to Spotify connect page
-      Navigator.pushReplacementNamed(context, '/connect-spotify');
-
-      // hide loading indicator
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/connect-spotify');
+      }
     } on FirebaseAuthException catch (e) {
-      Navigator.pop(context); // hide loading indicator
       displayMessageToUser(context, e.code); // display error message to user
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
-    // }
   }
 
   @override
@@ -160,7 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // sign in button
                     MyButton(
                       text: 'Register',
-                      onTap: registerUser,
+                      onTap: isLoading ? null : registerUser,
                     ),
 
                     const SizedBox(height: 50),
