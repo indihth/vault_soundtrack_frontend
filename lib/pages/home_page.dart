@@ -78,6 +78,11 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
+              Text(
+                "Welcome, ${FirebaseAuth.instance.currentUser?.displayName ?? 'User'}",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              SizedBox(height: 20),
               MyButton(
                   text: "Connect Spotify",
                   onTap: () {

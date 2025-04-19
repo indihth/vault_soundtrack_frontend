@@ -1,12 +1,29 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/login_or_register.dart';
 import 'package:vault_soundtrack_frontend/pages/connect_spotify_page.dart';
 import 'package:vault_soundtrack_frontend/pages/home_page.dart';
 import 'package:vault_soundtrack_frontend/services/user_services.dart';
+import 'package:vault_soundtrack_frontend/state/user_state.dart';
 
-class AuthPage extends StatelessWidget {
+class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
+
+  @override
+  State<AuthPage> createState() => _AuthPageState();
+}
+
+class _AuthPageState extends State<AuthPage> {
+  late UserState _userState;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize UserState
+    _userState = Provider.of<UserState>(context, listen: false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,50 +32,40 @@ class AuthPage extends StatelessWidget {
       body: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // if user is logged in
-          if (snapshot.hasData) {
-            // check if user has connected to Spotify
-            return FutureBuilder<bool>(
-              future: UserServices.checkSpotifyConnection(),
-              builder: (context, spotifySnapshot) {
-                if (spotifySnapshot.hasError) {
-                  // Handle the error state
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          spotifySnapshot.error.toString(),
-                          textAlign: TextAlign.center,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Refresh the page or retry the connection
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AuthPage(),
-                              ),
-                            );
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                if (spotifySnapshot.hasData) {
-                  return spotifySnapshot.data!
-                      ? HomePage() // if user is connected to Spotify, show homepage
-                      : ConnectSpotifyPage(); // otherwise, show connect page
-                }
-                return const Center(child: CircularProgressIndicator());
-              },
-            );
-          } else {
-            // if user is not logged in
+          // Show login/register if not authenticated
+          if (!snapshot.hasData) {
             return LoginOrRegister();
           }
+
+          // User is authenticated, now check Spotify connection
+          return FutureBuilder<void>(
+            // Trigger UserState update which checks Spotify connection
+            future: _userState.updateUserState(),
+            builder: (context, _) {
+              return Consumer<UserState>(
+                builder: (context, userState, _) {
+                  // If not connected to Spotify, force ConnectSpotifyPage
+                  if (!userState.isSpotifyConnected) {
+                    return PopScope(
+                      // onWillPop: () async => false, // Prevent back navigation
+                      child: const ConnectSpotifyPage(),
+                    );
+                  }
+
+                  // Only show HomePage if both authenticated and Spotify connected
+                  return HomePage();
+                },
+              );
+            },
+          );
+
+          // // if user is logged in
+          // if (snapshot.hasData) {
+          //   return HomePage();
+          // } else {
+          //   // if user is not logged in
+          //   return LoginOrRegister();
+          // }
         },
       ),
     );
