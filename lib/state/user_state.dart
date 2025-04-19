@@ -10,35 +10,15 @@ class UserState extends ChangeNotifier {
   bool get isSpotifyConnected => _isSpotifyConnected;
 
   void setDisplayName(String name) {
+    if (_displayName == name) return;
     _displayName = name;
     notifyListeners();
   }
 
   void setSpotifyConnection(bool isConnected) {
+    if (_isSpotifyConnected == isConnected) return;
     _isSpotifyConnected = isConnected;
     notifyListeners();
-  }
-
-  Future<void> updateUserState() async {
-    final user = FirebaseAuth.instance.currentUser; // get the current user
-    if (user != null) {
-      setDisplayName(user.displayName ?? 'User');
-      // Check Spotify connection
-      bool isConnected = await checkSpotifyConnection();
-      setSpotifyConnection(isConnected);
-    }
-  }
-
-  Future<bool> checkSpotifyConnection() async {
-    // Implement actual Spotify connection check here
-    try {
-      // make api call to check Spotify connection - returns boolean
-      final isConnected = await UserServices.checkSpotifyConnection();
-
-      return isConnected;
-    } catch (e) {
-      return false;
-    }
   }
 
   Future<void> createUserDocument(String username) async {
@@ -48,6 +28,17 @@ class UserState extends ChangeNotifier {
       setSpotifyConnection(false);
     } catch (e) {
       print('Error creating user document: $e');
+      rethrow;
+    }
+  }
+
+  // Only call this when explicitly needed (after spotify connect/disconnect)
+  Future<void> refreshSpotifyStatus() async {
+    try {
+      final isConnected = await UserServices.checkSpotifyConnection();
+      setSpotifyConnection(isConnected);
+    } catch (e) {
+      setSpotifyConnection(false);
       rethrow;
     }
   }

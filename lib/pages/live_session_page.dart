@@ -39,7 +39,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   }
 
   Future<void> _initializeSession() async {
-    _sessionState = Provider.of<SessionState>(context, listen: false);
+    // _sessionState = Provider.of<SessionState>(context, listen: false);
 
     try {
       if (_sessionState.isJoining) {
@@ -74,6 +74,11 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       _sessionState.stopListeningToSessionStatus();
 
       // If session is ended, stop listening to session status
+
+      // and navigate to home page
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigateAndClearState();
+      });
       return;
     }
 
@@ -108,13 +113,21 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   }
 
   Future<void> navigateAndClearState() async {
+    print('in navigateAndClearState');
     try {
-      // // set _isEnding to true to show loading spinner
-      // setState(() {
-      //   _isEnding = true;
-      // });
+      if (!mounted) return; // Check if the widget is still mounted
+
+      // set _isEnding to true to show loading spinner
+      setState(() {
+        _isEnding = true;
+      });
       // navigate first
-      await Navigator.pushReplacementNamed(context, '/home');
+      // await Navigator.pushReplacementNamed(context, '/home');
+      await Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (route) =>
+              false); // navigate to home page and remove all previous routes
 
       // only if navigation complete, clear state
       _sessionState.clearSessionState();
@@ -123,10 +136,13 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
       throw Exception('Error navigating to home: $e');
     } finally {
-      // Reset _isEnding to false after navigation
-      setState(() {
-        _isEnding = false;
-      });
+      // Check if the widget is still mounted before calling setState
+      if (mounted) {
+        // This prevents memory leaks and errors when navigating away from the page
+        setState(() {
+          _isEnding = false;
+        });
+      }
     }
   }
 
@@ -143,6 +159,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       final sessionId = _sessionState.sessionId;
 
       if (sessionId.isEmpty) {
+        print("sessionId : $sessionId");
         throw Exception('Session ID state is empty');
       }
 
@@ -201,6 +218,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     // Get session state
     final playlistId = _sessionState.playlistId;
     final isHost = _sessionState.isHost;
+    final sessionId = _sessionState.sessionId;
 
     if (_isEnding) {
       return Center(
@@ -308,6 +326,10 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
+                  Text(
+                    'Session ID: $sessionId',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   PlaylistHeader(
                     item: playlist,
                     isHost: isHost,

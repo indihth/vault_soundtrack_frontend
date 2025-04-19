@@ -65,7 +65,6 @@ class _RegisterPageState extends State<RegisterPage> {
       print("User document created");
 
       // Update UserState
-      _userState.setDisplayName(usernameController.text);
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/connect-spotify');
@@ -74,6 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
       displayMessageToUser(context, e.code); // display error message to user
     } finally {
       if (mounted) {
+        _userState.setDisplayName(usernameController.text);
         setState(() {
           isLoading = false;
         });

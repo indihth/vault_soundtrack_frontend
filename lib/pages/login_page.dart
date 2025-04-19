@@ -22,42 +22,42 @@ class _LoginPageState extends State<LoginPage> {
 
   final passwordController = TextEditingController();
 
+  late UserState _userState; // user state
+
   bool isLoading = false; // loading indicator
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize UserState
+    _userState = Provider.of<UserState>(context, listen: false);
+  }
 
   // sign user in method
   void login() async {
-    // show loading indicator
     setState(() {
       isLoading = true;
     });
 
-    // wraping in scheduler to ensures any animations complete before executing signin
-    // smoother ui rendering and no dropped frames
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      // try sign user in
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: emailController.text, password: passwordController.text);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text, password: passwordController.text);
 
-        // Update UserState after successful login
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          context.read<UserState>().setDisplayName(user.displayName ?? 'User');
-          await context.read<UserState>().updateUserState();
-        }
-
-        // hide loading indicator
-        setState(() {
-          isLoading = false;
-        });
-      } on FirebaseAuthException catch (e) {
-        // hide loading indicator
-        setState(() {
-          isLoading = false;
-        });
-        displayMessageToUser(context, e.code); // display error message to user
+      // Update display name only
+      final user = FirebaseAuth.instance.currentUser;
+      if (user?.displayName != null) {
+        _userState.setDisplayName(user!.displayName!);
       }
-    });
+    } on FirebaseAuthException catch (e) {
+      displayMessageToUser(context, e.code);
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
