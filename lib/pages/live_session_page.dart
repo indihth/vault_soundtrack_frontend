@@ -34,52 +34,40 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   @override
   void initState() {
     super.initState();
-
-    _sessionState = Provider.of<SessionState>(context, listen: false);
-  }
-
-  Future<void> _initializeSession() async {
-    _sessionState = Provider.of<SessionState>(context, listen: false);
-
-    try {
-      if (_sessionState.isJoining) {
-        await _sessionState.joinExistingSession(
-          _sessionState.sessionId,
-          _sessionState.playlistId,
-        );
-        // Show success message
-        UIHelpers.showSnackBar(context, 'Successfully joined session');
-      }
-
-      // Continue with regular session initialization
-      // ...existing initialization code...
-    } catch (e) {
-      UIHelpers.showSnackBar(
-        context,
-        'Failed to initialize session: ${e.toString()}',
-        isError: true,
-      );
-      Navigator.pop(context); // Return to previous screen on error
-    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    // _sessionState can't be initialised in initState
+    // because widget isn't built yet and tries to access Provider
+    _sessionState = Provider.of<SessionState>(context);
+
     print('session state active didChanged running');
 
     // Check if session is ended and needs to redirect
     if (!_sessionState.isActive) {
-      // Session is ended, stop listening before redirecting
-      _sessionState.stopListeningToSessionStatus();
-
-      // If session is ended, stop listening to session status
+      handleSessionEnded();
       return;
     }
 
     final sessionId = _sessionState.sessionId;
-
     _sessionState.listenToSessionStatus(sessionId);
+  }
+
+  /// Handles common behavior when a session is ending or has ended
+  /// for both host and guest users
+  void handleSessionEnded() {
+    // Stop listening to session status
+    _sessionState.stopListeningToSessionStatus();
+
+    // Navigate away after widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        navigateAndClearState();
+      }
+    });
   }
 
   Future<void> handleSavePlaylist() async {
@@ -109,10 +97,10 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
   Future<void> navigateAndClearState() async {
     try {
-      // // set _isEnding to true to show loading spinner
-      // setState(() {
-      //   _isEnding = true;
-      // });
+      // set _isEnding to true to show loading spinner
+      setState(() {
+        _isEnding = true;
+      });
       // navigate first
       await Navigator.pushReplacementNamed(context, '/home');
 
@@ -148,12 +136,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
       await _sessionState.endSession(sessionId);
 
-      await navigateAndClearState();
-
-      //reset _isEnding to false after session ended
-      setState(() {
-        _isEnding = false;
-      });
+      // Use the common session ending handler
+      // handleSessionEnded();
     } catch (e) {
       // Reset _isEnding to false in case of error
       setState(() {
@@ -163,8 +147,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       // Display error message to the user
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
       throw Exception('Error ending session: $e');
-    } finally {
-      // reset _isEnding
     }
   }
 
