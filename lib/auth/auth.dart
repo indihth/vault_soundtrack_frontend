@@ -37,27 +37,29 @@ class _AuthPageState extends State<AuthPage> {
             return LoginOrRegister();
           }
 
-          // User is authenticated, now check Spotify connection
-          return FutureBuilder<void>(
-            // Trigger UserState update which checks Spotify connection
-            future: _userState.updateUserState(),
-            builder: (context, _) {
-              return Consumer<UserState>(
-                builder: (context, userState, _) {
-                  // If not connected to Spotify, force ConnectSpotifyPage
-                  if (!userState.isSpotifyConnected) {
-                    return PopScope(
-                      // onWillPop: () async => false, // Prevent back navigation
-                      child: const ConnectSpotifyPage(),
-                    );
-                  }
+          return HomePage();
 
-                  // Only show HomePage if both authenticated and Spotify connected
-                  return HomePage();
-                },
-              );
-            },
-          );
+          // // User is authenticated, now check Spotify connection
+          // return FutureBuilder<void>(
+          //   // Trigger UserState update which checks Spotify connection
+          //   future: _userState.updateUserState(),
+          //   builder: (context, _) {
+          //     return Consumer<UserState>(
+          //       builder: (context, userState, _) {
+          //         // If not connected to Spotify, force ConnectSpotifyPage
+          //         if (!userState.isSpotifyConnected) {
+          //           return PopScope(
+          //             // onWillPop: () async => false, // Prevent back navigation
+          //             child: const ConnectSpotifyPage(),
+          //           );
+          //         }
+
+          //         // Only show HomePage if both authenticated and Spotify connected
+          //         return HomePage();
+          //       },
+          //     );
+          //   },
+          // );
 
           // // if user is logged in
           // if (snapshot.hasData) {

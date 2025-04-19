@@ -40,11 +40,11 @@ class _LoginPageState extends State<LoginPage> {
             email: emailController.text, password: passwordController.text);
 
         // Update UserState after successful login
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          context.read<UserState>().setDisplayName(user.displayName ?? 'User');
-          await context.read<UserState>().updateUserState();
-        }
+        // final user = FirebaseAuth.instance.currentUser;
+        // if (user != null) {
+        //   context.read<UserState>().setDisplayName(user.displayName ?? 'User');
+        //   await context.read<UserState>().updateUserState();
+        // }
 
         // hide loading indicator
         setState(() {
