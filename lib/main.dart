@@ -58,26 +58,32 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'Flutter Demo',
-        theme: lightMode,
-        darkTheme: darkMode,
-        debugShowCheckedModeBanner: false,
-        // home: ListeningHistoryPage(),
-        home: DeepLinkListener(child: AuthPage()),
-        routes: {
-          '/auth': (context) => const AuthPage(),
-          '/home': (context) => HomePage(),
-          '/create-session': (context) => const CreateSessionPage(),
-          '/join-session': (context) => const JoinSessionPage(
-                sessionId: 'undefined',
-              ),
-          '/live-session': (context) => const LiveSessionPage(),
-          '/session-list': (context) => const SessionListPage(),
-          '/user-sessions': (context) => const UserSessionsListPage(),
-          '/connect-spotify': (context) => const ConnectSpotifyPage(),
-          '/waiting-room': (context) => const SessionWaitingRoomPage(),
-          // '/manage-spotify': (context) => const ManageSpotifyPage(),
-        });
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context)
+            .unfocus(); // dismiss keyboard when clicking outside of textfield
+      },
+      child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: lightMode,
+          darkTheme: darkMode,
+          debugShowCheckedModeBanner: false,
+          // home: ListeningHistoryPage(),
+          home: DeepLinkListener(child: AuthPage()),
+          routes: {
+            '/auth': (context) => const AuthPage(),
+            '/home': (context) => HomePage(),
+            '/create-session': (context) => const CreateSessionPage(),
+            '/join-session': (context) => const JoinSessionPage(
+                  sessionId: 'undefined',
+                ),
+            '/live-session': (context) => const LiveSessionPage(),
+            '/session-list': (context) => const SessionListPage(),
+            '/user-sessions': (context) => const UserSessionsListPage(),
+            '/connect-spotify': (context) => const ConnectSpotifyPage(),
+            '/waiting-room': (context) => const SessionWaitingRoomPage(),
+            // '/manage-spotify': (context) => const ManageSpotifyPage(),
+          }),
+    );
   }
 }
