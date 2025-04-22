@@ -16,14 +16,43 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   late UserState _userState;
+  bool _isInitialized = false; // Track initialization state
+  bool _isLoading = false; // Track loading state
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize UserState
+    // initialize UserState
     _userState = Provider.of<UserState>(context, listen: false);
+
+    // waits until the widget is fully built before calling _initializeUserState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeUserState();
+    });
   }
+
+  // user state must be handled after widget is mounted to avoid calling setState on unmounted widget
+  Future<void> _initializeUserState() async {
+    await _userState.updateUserState();
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+        _isLoading = false; // Set loading to false after initialization
+      });
+    }
+  }
+
+  // Future<void> _handleSpotifyConnectionSuccess() async {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _userState.clearNewUserFlag();
+  //     // Navigate to home after successful connection
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => HomePage()),
+  //     );
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -34,40 +63,61 @@ class _AuthPageState extends State<AuthPage> {
         builder: (context, snapshot) {
           // Show login/register if not authenticated
           if (!snapshot.hasData) {
+            if (_isInitialized) {
+              // reset the state when logged out, clean for next login
+
+              // Future.microtastk is used to ensure that the state is reset after the widget is built
+              // and not before, preventing any potential issues with the widget tree
+              Future.microtask(() {
+                _userState.resetState();
+              });
+            }
             return LoginOrRegister();
           }
 
-          return HomePage();
+          // If we haven't initialized user state yet or it's loading, show loading
+          if (_isLoading || !_isInitialized) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // // User is authenticated, now check Spotify connection
-          // return FutureBuilder<void>(
-          //   // Trigger UserState update which checks Spotify connection
-          //   future: _userState.updateUserState(),
-          //   builder: (context, _) {
-          //     return Consumer<UserState>(
-          //       builder: (context, userState, _) {
-          //         // If not connected to Spotify, force ConnectSpotifyPage
-          //         if (!userState.isSpotifyConnected) {
-          //           return PopScope(
-          //             // onWillPop: () async => false, // Prevent back navigation
-          //             child: const ConnectSpotifyPage(),
-          //           );
-          //         }
+          // User is authenticated, now check Spotify connection
+          return Consumer<UserState>(
+            builder: (context, userState, _) {
+              // If not connected to Spotify, force ConnectSpotifyPage
+              if (userState.isNewUser && !userState.isSpotifyConnected) {
+                return PopScope(
+                  child: const ConnectSpotifyPage(),
+                );
+              } else if (userState.isNewUser && userState.isSpotifyConnected) {
+                // only after widget is built - avoids calling setState on unmounted widget
+                // previousl setup caused a flash of the homescreen before the transition to ConnectSpotifyPage
 
-          //         // Only show HomePage if both authenticated and Spotify connected
-          //         return HomePage();
-          //       },
-          //     );
-          //   },
-          // );
+                // schedules navigation callback after the widget is built
+                Future.microtask(() {
+                  userState.clearNewUserFlag();
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => HomePage()),
+                      (route) => false // remove all previous routes
+                      );
+                });
 
-          // // if user is logged in
-          // if (snapshot.hasData) {
-          //   return HomePage();
-          // } else {
-          //   // if user is not logged in
-          //   return LoginOrRegister();
-          // }
+                // laoding indicator during the transition
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 20),
+                      Text('Connected to Spotify! Redirecting...')
+                    ],
+                  ),
+                );
+              }
+
+              // Only show HomePage if both authenticated and Spotify connected
+              return HomePage();
+            },
+          );
         },
       ),
     );
