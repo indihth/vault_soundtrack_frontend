@@ -55,8 +55,12 @@ class _RegisterPageState extends State<RegisterPage> {
               email: emailController.text, password: passwordController.text);
       // update user display name - handle on backend? or update immediately?
 
-      // Set display name
+      // Set display name - working??
       await userCredential.user?.updateDisplayName(usernameController.text);
+
+      // Update UserState
+      _userState.setDisplayName(usernameController.text);
+      _userState.setNewUserFlag();
 
       print("User registered: ${userCredential.user?.uid}");
 
@@ -64,13 +68,6 @@ class _RegisterPageState extends State<RegisterPage> {
       await _userState.createUserDocument(usernameController.text);
 
       print("User document created");
-
-      // Update UserState
-      _userState.setDisplayName(usernameController.text);
-
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/connect-spotify');
-      }
     } on FirebaseAuthException catch (e) {
       displayMessageToUser(context, e.code); // display error message to user
     } finally {
@@ -84,6 +81,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       // custom widget with scrollable functionality

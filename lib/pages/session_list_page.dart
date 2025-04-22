@@ -12,7 +12,7 @@ class SessionListPage extends StatelessWidget {
       BuildContext context, DocumentSnapshot session) async {
     try {
       final sessionState = Provider.of<SessionState>(context, listen: false);
-      await sessionState.reOpenSession(session.id, session);
+      // await sessionState.reOpenSession(session.id, session);
 
       // Navigate to live session
       Navigator.pushReplacementNamed(context, '/live-session');

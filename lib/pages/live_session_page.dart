@@ -48,6 +48,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
     // Check if session is ended and needs to redirect
     if (!_sessionState.isActive) {
+      print('Session state: ${_sessionState.isActive}');
+      print('Session is not active, redirecting...');
       handleSessionEnded();
       return;
     }
@@ -103,6 +105,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       });
       // navigate first
       await Navigator.pushReplacementNamed(context, '/home');
+      print('Navigated to home page');
 
       // only if navigation complete, clear state
       _sessionState.clearSessionState();
@@ -177,6 +180,11 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
     return sortedTracks;
   }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {

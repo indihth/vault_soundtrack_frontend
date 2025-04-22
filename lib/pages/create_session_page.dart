@@ -108,7 +108,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                 SizedBox(height: 16),
                 Text('Create Session Page'),
                 MyButton(
-                  text: "Start session",
+                  text: "Create session",
                   onTap: handleStartSession,
                 ),
               ],
