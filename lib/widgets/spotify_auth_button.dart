@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/spotify_services.dart';
 
 class SpotifyAuthButton extends StatelessWidget {
-  final VoidCallback onAuthSuccess;
+  // final VoidCallback onAuthSuccess;
+  final Function(bool success)
+      onAuthSuccess; // returns a boolean value success/failure
 
   const SpotifyAuthButton({super.key, required this.onAuthSuccess});
 
@@ -17,13 +19,11 @@ class SpotifyAuthButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
         ),
       ),
-      onPressed: () => SpotifyServices.startAuthFlow(context, onAuthSuccess),
+      onPressed: () => SpotifyServices.startAuthFlow(
+          context, (success) => onAuthSuccess(success)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon(Icons.music_note,
-          //     color: Theme.of(context).colorScheme.inversePrimary),
-          // SizedBox(width: 8),
           Text(
             'Lets go!',
             style: TextStyle(

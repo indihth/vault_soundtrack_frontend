@@ -17,7 +17,10 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
   String? idToken;
 
   // This function will be called after successful Spotify authentication
-  void onAuthSuccess() async {
+  void onAuthSuccess(bool success) async {
+    if (!success || !mounted)
+      return; // don't proceed if not successful or widget is unmounted
+
     try {
       // Get the current Firebase user
       User? user = FirebaseAuth.instance.currentUser;
@@ -26,10 +29,13 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
         idToken = await user.getIdToken(true);
 
         // Update UserState
-        context.read<UserState>().setSpotifyConnection(true);
+        if (mounted) {
+          final userState = Provider.of<UserState>(context, listen: false);
+          userState.setSpotifyConnection(true);
+        }
 
-        // Navigate to home after successful connection
-        Navigator.pushReplacementNamed(context, '/home');
+        // // Navigate to home after successful connection
+        // Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       print("Error in onAuthSuccess: $e");

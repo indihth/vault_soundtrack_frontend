@@ -114,7 +114,8 @@ class SpotifyServices {
   }
 
   static Future<void> startAuthFlow(
-      BuildContext context, VoidCallback onAuthSuccess) async {
+      BuildContext context, Function(bool success) onAuthSuccess) async {
+    // BuildContext context, VoidCallback onAuthSuccess) async {
     try {
       UIHelpers.showLoadingIndicator(context);
 
@@ -139,9 +140,8 @@ class SpotifyServices {
       // Update UserState
       context.read<UserState>().setSpotifyConnection(true);
 
-      // if authentication was successful
-      // browser will auto close when redirected to callbackUrlScheme
-      onAuthSuccess();
+      // if authentication was successful browser will auto close when redirected to callbackUrlScheme
+      onAuthSuccess(true);
 
       // success message
       UIHelpers.showSnackBar(context, 'Successfully connected to Spotify!');
@@ -149,6 +149,8 @@ class SpotifyServices {
       // hide loading indicator if it's showing
       UIHelpers.hideDialog(context);
 
+      // Send success callback with false to indicate failure
+      onAuthSuccess(false);
       // Authentication was canceled or failed
       UIHelpers.showSnackBar(
         context,
