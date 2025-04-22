@@ -40,7 +40,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
 
       // if the response is successful, navigate to the waiting room
       if (response["success"]) {
-        await Navigator.pushNamed(context, '/waiting-room');
+        await Navigator.pushReplacementNamed(context, '/waiting-room');
 
         // set state after navigation to avoid unnecessary rebuilds and flashing of previous screen
         setState(() {

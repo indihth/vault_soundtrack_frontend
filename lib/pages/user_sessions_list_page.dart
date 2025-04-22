@@ -4,15 +4,17 @@ import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/services/user_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
+import 'package:vault_soundtrack_frontend/widgets/session_card.dart';
 
 class UserSessionsListPage extends StatelessWidget {
   const UserSessionsListPage({Key? key}) : super(key: key);
 
   Future<void> _handleSessionSelect(
-      BuildContext context, DocumentSnapshot session) async {
+      BuildContext context, Map<String, dynamic> session) async {
+    // BuildContext context, DocumentSnapshot session) async {
     try {
       final sessionState = Provider.of<SessionState>(context, listen: false);
-      await sessionState.reOpenSession(session.id, session);
+      await sessionState.reOpenSession(session['id'], session);
 
       // Navigate to live session
       Navigator.pushReplacementNamed(context, '/live-session');
@@ -45,11 +47,19 @@ class UserSessionsListPage extends StatelessWidget {
             itemCount: sessions.length,
             itemBuilder: (context, index) {
               final session = sessions[index];
-              return ListTile(
-                title: Text(session['sessionName'] ?? 'Unnamed Session'),
-                subtitle: Text(session['description'] ?? 'No description'),
-                // onTap: () => _handleSessionSelect(context, session),
+              return GestureDetector(
+                onTap: () => _handleSessionSelect(context, session),
+                child: SessionCard(
+                  title: session['sessionName'] ?? 'Unnamed Session',
+                  description: session['description'] ?? 'No description',
+                  imageUrl: session['topTrackImageUrl'] ?? 'No image',
+                ),
               );
+              // return ListTile(
+              //   title: Text(session['sessionName'] ?? 'Unnamed Session'),
+              //   subtitle: Text(session['description'] ?? 'No description'),
+              //   onTap: () => _handleSessionSelect(context, session),
+              // );
             },
           );
         },

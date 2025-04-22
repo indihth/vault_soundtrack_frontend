@@ -7,7 +7,7 @@ class ScrollWrapper extends StatelessWidget {
   const ScrollWrapper({
     super.key,
     required this.child,
-    this.reverse = false, // default is false
+    this.reverse = false,
   });
 
   @override

@@ -48,7 +48,7 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
 
       if (joined['success']) {
         // check if the response is successful
-        await Navigator.pushNamed(context, '/waiting-room');
+        await Navigator.pushReplacementNamed(context, '/waiting-room');
 
         setState(() {
           _isLoading = false;
