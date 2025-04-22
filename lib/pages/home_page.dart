@@ -1,9 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vault_soundtrack_frontend/state/user_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/services/spotify_services.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
+import 'package:vault_soundtrack_frontend/widgets/past_sessions.dart';
+import 'package:vault_soundtrack_frontend/widgets/session_card.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -45,11 +49,24 @@ class _HomePageState extends State<HomePage> {
 
   logout() async {
     try {
+      final userState = Provider.of<UserState>(context, listen: false);
+
+      // if (userState.isLoggingOut) return; // prevent multiple logouts
+      print('Logging out...');
+
+      // sets the logout flag to true - AuthPage listens and handles state changes
+      // to avoid calling setState on unmounted widget
+      userState.startLogout();
+
       await FirebaseAuth.instance.signOut();
     } catch (e) {
       if (mounted) {
         UIHelpers.showSnackBar(context, 'Error signing out', isError: true);
       }
+
+      // reset logout flag if error occurs
+      final userState = Provider.of<UserState>(context, listen: false);
+      userState.endLogout();
     }
   }
 
@@ -67,7 +84,9 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: logout,
+            onPressed: () {
+              logout();
+            },
           )
         ],
       ),
@@ -104,26 +123,12 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 20),
               MyButton(
-                text: "Live Session",
-                onTap: () {
-                  Navigator.pushNamed(context, '/live-session');
-                },
-              ),
-              SizedBox(height: 20),
-              MyButton(
-                text: "Test Sessions List",
-                onTap: () {
-                  Navigator.pushNamed(
-                      context, '/session-list'); // for development only
-                },
-              ),
-              SizedBox(height: 20),
-              MyButton(
                 text: "User's Sessions",
                 onTap: () {
                   Navigator.pushNamed(context, '/user-sessions');
                 },
               ),
+              PastSessions(),
             ],
           ),
         ),
