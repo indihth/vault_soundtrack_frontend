@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vault_soundtrack_frontend/services/user_services.dart';
+import 'package:vault_soundtrack_frontend/pages/live_session_page.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 import 'package:vault_soundtrack_frontend/widgets/session_card.dart';
@@ -13,10 +13,18 @@ class PastSessions extends StatelessWidget {
     // BuildContext context, DocumentSnapshot session) async {
     try {
       final sessionState = Provider.of<SessionState>(context, listen: false);
-      await sessionState.reOpenSession(session['id'], session);
+      await sessionState.viewPastSession(session['id'], session);
 
       // Navigate to live session
-      Navigator.pushReplacementNamed(context, '/live-session');
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                LiveSessionPage(viewingMode: true), // indicates viewing mode
+          ),
+        );
+      }
     } catch (e) {
       UIHelpers.showSnackBar(context, 'Error loading session: $e',
           isError: true);
@@ -64,36 +72,30 @@ class PastSessions extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final sessions = sessionState.pastSessions;
         final sortedSessions = sortSessionsByDate(sessionState.pastSessions);
 
-        return Column(
-          children: [
-            Text(
-              'Past Sessions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            SizedBox(
-              height: 250,
-              child: ListView.separated(
-                // switch fro .builder to .separated to add spacing
-                scrollDirection: Axis.horizontal,
-                itemCount: sortedSessions.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 10),
-                itemBuilder: (context, index) {
-                  final session = sortedSessions[index];
-                  return GestureDetector(
-                    onTap: () => _handleSessionSelect(context, session),
-                    child: SessionCard(
-                      title: session['sessionName'] ?? 'Unnamed Session',
-                      description: session['description'] ?? 'No description',
-                      imageUrl: session['topTrackImageUrl'] ?? 'No image',
-                    ),
-                  );
-                },
+        return GridView.builder(
+          padding: EdgeInsets.all(8),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // Two columns
+            childAspectRatio: 0.75, // Adjust for card dimensions
+            crossAxisSpacing: 10, // Horizontal space between items
+            mainAxisSpacing: 10, // Vertical space between items
+          ),
+          // switch fro .builder to .separated to add spacing
+          // scrollDirection: Axis.horizontal,
+          itemCount: sortedSessions.length,
+          itemBuilder: (context, index) {
+            final session = sortedSessions[index];
+            return GestureDetector(
+              onTap: () => _handleSessionSelect(context, session),
+              child: SessionCard(
+                title: session['sessionName'] ?? 'Unnamed Session',
+                description: session['description'] ?? 'No description',
+                imageUrl: session['topTrackImageUrl'] ?? 'No image',
               ),
-            ),
-          ],
+            );
+          },
         );
       },
     );

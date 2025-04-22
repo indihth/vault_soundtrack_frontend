@@ -27,8 +27,8 @@ class SessionCard extends StatelessWidget {
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Container(
-                width: 150,
-                height: 150,
+                // width: 150,
+                // height: 150,
                 color: Colors.grey[300],
                 child: const Center(
                   child: CircularProgressIndicator(),
@@ -44,11 +44,11 @@ class SessionCard extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 8.0),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 16.0),
+          // Text(
+          //   description,
+          //   style: Theme.of(context).textTheme.bodySmall,
+          // ),
+          // const SizedBox(height: 16.0),
         ],
       ),
     );
