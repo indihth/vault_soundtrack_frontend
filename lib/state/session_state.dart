@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
+import 'package:vault_soundtrack_frontend/services/user_services.dart';
 
 class SessionState extends ChangeNotifier {
   // The current session ID
@@ -15,7 +14,12 @@ class SessionState extends ChangeNotifier {
   String _hostDisplayName = '';
   bool _isHost = false;
   bool _isActive = false;
-  bool _isJoining = false; // Flag to indicate if the user is joining a session
+  bool _isJoining = false; // glag to indicate if the user is joining a session
+
+  // Past sessions - used to store the past sessions of the user
+  List<Map<String, dynamic>> _pastSessions = [];
+  bool _isLoading = false; // flag for sessions loading
+  DateTime? _lastFetched; // timestamp of the last time sessions were fetched
 
   // Getters
   String get sessionId => _sessionId;
@@ -26,9 +30,39 @@ class SessionState extends ChangeNotifier {
   bool get isHost => _isHost;
   bool get isActive => _isActive;
   bool get isJoining => _isJoining;
+  List<Map<String, dynamic>> get pastSessions => _pastSessions;
+  bool get isLoading => _isLoading;
 
   // Setup stream subscription to listen for changes in the session state
   StreamSubscription? _sessionStateSubscription;
+
+  // Methods
+
+  // load past sessions if not already loaded or force refresh
+  Future<void> loadPastSessions({bool forceRefresh = false}) async {
+    // skip if already loading or if data exists and no force refresh
+    if (_isLoading || (_pastSessions.isNotEmpty && !forceRefresh)) {
+      return;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _pastSessions = await UserServices.getUserSessions();
+      _lastFetched = DateTime.now();
+    } catch (e) {
+      print('Error loading sessions: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void refreshSessions() {
+    // called when a a user is done with a new session
+    loadPastSessions(forceRefresh: true);
+  }
 
   // Listen to session status changes in Firestore, indicate if host has started session
   void listenToSessionStatus(String sessionId) {
@@ -75,13 +109,6 @@ class SessionState extends ChangeNotifier {
         }
       });
     }
-  }
-
-  @override
-  void dispose() {
-    // Cancel the subscription when the state is disposed
-    _sessionStateSubscription?.cancel();
-    super.dispose();
   }
 
   void stopListeningToSessionStatus() {
@@ -151,9 +178,6 @@ class SessionState extends ChangeNotifier {
     return session;
   }
 
-  // Rejoin session
-  // Future<void> rejoinSession(String sessionId)
-
   Future<void> joinExistingSession(String sessionId, String playlistId) async {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -192,22 +216,25 @@ class SessionState extends ChangeNotifier {
   }
 
   // Re-open session
-  Future<void> reOpenSession(String sessionId, DocumentSnapshot session) async {
+  Future<void> reOpenSession(
+      String sessionId, Map<String, dynamic> session) async {
+    // Future<void> reOpenSession(String sessionId, DocumentSnapshot session) async {
     try {
       await PlaylistSessionServices.updateSessionStatus(sessionId, 'active');
 
       // Update session state
-      final data = session.data() as Map<String, dynamic>;
+      // final data = session.data() as Map<String, dynamic>;
 
       // Load new session data into state
-      setSessionId(session.id);
-      setSessionName(data['sessionName'] ?? '');
-      setSessionDescription(data['description'] ?? '');
-      setHostDisplayName(data['hostDisplayName'] ?? '');
+      setSessionId(sessionId);
+      // setSessionId(session.id);
+      setSessionName(session['sessionName'] ?? '');
+      setSessionDescription(session['description'] ?? '');
+      setHostDisplayName(session['hostDisplayName'] ?? '');
       setIsHost(true); // Set for testing
 
       // For joining directly to the live session page
-      setPlaylistId(data['playlistId'] ?? '');
+      setPlaylistId(session['playlistId'] ?? '');
       setIsActive(true);
 
       // Start listener
@@ -215,6 +242,13 @@ class SessionState extends ChangeNotifier {
     } catch (e) {
       throw Exception('Failed to re-open session - $e');
     }
+  }
+
+  @override
+  void dispose() {
+    // Cancel the subscription when the state is disposed
+    _sessionStateSubscription?.cancel();
+    super.dispose();
   }
 
   // Clear the session state - use when leaving a session
