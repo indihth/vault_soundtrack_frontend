@@ -16,7 +16,8 @@ import '../models/playlist.dart';
 /// LiveSessionPage: A StatefulWidget that displays the user's listening history
 /// This is the main screen that shows all songs the user has played
 class LiveSessionPage extends StatefulWidget {
-  const LiveSessionPage({Key? key}) : super(key: key);
+  final bool viewingMode;
+  const LiveSessionPage({Key? key, this.viewingMode = false}) : super(key: key);
 
   @override
   State<LiveSessionPage> createState() => _LiveSessionPageState();
@@ -44,6 +45,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     // because widget isn't built yet and tries to access Provider
     _sessionState = Provider.of<SessionState>(context);
 
+    // ignore session state changes if in viewing mode - would trigger rebuild
+    if (widget.viewingMode) return;
+
     print('session state active didChanged running');
 
     // Check if session is ended and needs to redirect
@@ -63,6 +67,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   void handleSessionEnded() {
     // Stop listening to session status
     _sessionState.stopListeningToSessionStatus();
+
+    // fetch updated user sessions and store in session state - update for dashboard UI
+    _sessionState.refreshSessions();
 
     // Navigate away after widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -191,6 +198,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     // Get session state
     final playlistId = _sessionState.playlistId;
     final isHost = _sessionState.isHost;
+    final isViewingMode = widget.viewingMode || _sessionState.isViewingMode;
 
     if (_isEnding) {
       return Center(
@@ -226,56 +234,72 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     }
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Hides automatically added back btn
+        // let user navigate back to homepage - adjust stack after joining
+        automaticallyImplyLeading: false, // automatically hides added back btn
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              // Get session ID from provider
-              final sessionId = _sessionState.sessionId;
-              final qrCodeText = '$sessionId, late';
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text(
-                    'Scan to join',
-                    textAlign: TextAlign.center,
-                  ),
-                  content: SizedBox(
-                    width: 180,
-                    height: 200,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        QrImageView(
-                          data: qrCodeText,
-                          // version: QrVersions.auto,
-                          backgroundColor: Colors.white,
-                          // padding: EdgeInsets.all(10),
-                          size: 170.0,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+              if (isViewingMode) {
+                Navigator.pop(
+                    context); // clears page from stack - back to previous screen
+                _sessionState.clearSessionState(); // clear session state
+              } else {
+                Navigator.pushReplacementNamed(context, '/homepage');
+              }
             },
           ),
+          if (!isViewingMode) // don't show QR code in viewing mode
+            IconButton(
+              icon: const Icon(Icons.qr_code),
+              onPressed: () {
+                // Get session ID from provider
+                final sessionId = _sessionState.sessionId;
+                final qrCodeText = '$sessionId, late';
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text(
+                      'Scan to join',
+                      textAlign: TextAlign.center,
+                    ),
+                    content: SizedBox(
+                      width: 180,
+                      height: 200,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          QrImageView(
+                            data: qrCodeText,
+                            // version: QrVersions.auto,
+                            backgroundColor: Colors.white,
+                            // padding: EdgeInsets.all(10),
+                            size: 170.0,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
         ],
       ),
       body: StreamBuilder<Playlist>(
-        stream: _getPlaylistStream(playlistId),
+        // uses either a Future or a Stream depending on viewing mode - view only fetches once, no updates
+        stream: isViewingMode
+            ? Stream.fromFuture(_getPlaylistOnce(playlistId))
+            : _getPlaylistStream(playlistId),
         builder: (context, snapshot) {
-          // Handle different states of the future
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show loading spinner while data is being fetched
+            // loading spinner while data is being fetched
             return const Center(
               child: CircularProgressIndicator(),
             );
           } else if (snapshot.hasError) {
-            // Show error message if data fetching failed
+            // show error message if data fetching failed
             return Center(
               child: Text(
                 'Error: ${snapshot.error}',
@@ -283,7 +307,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
               ),
             );
           } else if (!snapshot.hasData || snapshot.data!.tracks.isEmpty) {
-            // Show message when no history data exists
+            // show message when no history data exists
             return const Center(
               child: Text('No listening history found'),
             );
@@ -306,11 +330,11 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: sortedTracks.length, // Also fixed itemCount
+                      itemCount: sortedTracks.length,
                       itemBuilder: (context, index) {
                         Track track = sortedTracks[index];
                         return TrackCard(
-                            // Use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
+                            // use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
                             key: ObjectKey(track.trackId),
                             item: track);
                       },
@@ -349,6 +373,24 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     } catch (e) {
       print('Error creating stream: $e');
       return Stream.error('Failed to create playlist stream: $e');
+    }
+  }
+
+// for viewing mode - only fetch once
+  Future<Playlist> _getPlaylistOnce(String playlistId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('playlists')
+          .doc(playlistId)
+          .get();
+
+      if (doc.exists) {
+        return Playlist.fromFirestore(doc);
+      }
+      throw Exception('Playlist not found');
+    } catch (e) {
+      print('Error loading playlist: $e');
+      throw Exception('Failed to load playlist: $e');
     }
   }
 }

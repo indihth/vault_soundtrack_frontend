@@ -14,12 +14,12 @@ class SessionState extends ChangeNotifier {
   String _hostDisplayName = '';
   bool _isHost = false;
   bool _isActive = false;
-  bool _isJoining = false; // glag to indicate if the user is joining a session
+  bool _isJoining = false;
+  bool _isViewingMode = false;
 
   // Past sessions - used to store the past sessions of the user
   List<Map<String, dynamic>> _pastSessions = [];
   bool _isLoading = false; // flag for sessions loading
-  DateTime? _lastFetched; // timestamp of the last time sessions were fetched
 
   // Getters
   String get sessionId => _sessionId;
@@ -32,11 +32,32 @@ class SessionState extends ChangeNotifier {
   bool get isJoining => _isJoining;
   List<Map<String, dynamic>> get pastSessions => _pastSessions;
   bool get isLoading => _isLoading;
+  bool get isViewingMode => _isViewingMode; // added getter for viewing mode
 
   // Setup stream subscription to listen for changes in the session state
   StreamSubscription? _sessionStateSubscription;
 
   // Methods
+
+// view ended session
+  Future<void> viewPastSession(
+      String sessionId, Map<String, dynamic> session) async {
+    try {
+      // firebase doesn't get updated in viewing mode - just setting the session state
+
+      setSessionId(sessionId);
+      setSessionName(session['sessionName'] ?? '');
+      setSessionDescription(session['description'] ?? '');
+      setHostDisplayName(session['hostDisplayName'] ?? '');
+      setPlaylistId(session['playlistId'] ?? '');
+
+      setIsHost(false);
+      setIsActive(false);
+      setViewingMode(true);
+    } catch (e) {
+      throw Exception('Failed to view past session - $e');
+    }
+  }
 
   // load past sessions if not already loaded or force refresh
   Future<void> loadPastSessions({bool forceRefresh = false}) async {
@@ -49,8 +70,19 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _pastSessions = await UserServices.getUserSessions();
-      _lastFetched = DateTime.now();
+      var userSessions = await UserServices.getUserSessions();
+
+      // seperate active sessions from past sessions
+      var activeSessions = userSessions.where((session) {
+        return session['status'] == 'active' || session['status'] == 'waiting';
+      }).toList();
+
+      _pastSessions = userSessions.where((session) {
+        return session['status'] == 'ended';
+      }).toList();
+
+      print('active sessions: $activeSessions');
+      print('past sessions: $_pastSessions');
     } catch (e) {
       print('Error loading sessions: $e');
     } finally {
@@ -264,6 +296,12 @@ class SessionState extends ChangeNotifier {
     _hostDisplayName = '';
     _isHost = false;
     _isActive = false;
+    _isViewingMode = false;
+    notifyListeners();
+  }
+
+  void setViewingMode(bool isViewing) {
+    _isViewingMode = isViewing;
     notifyListeners();
   }
 
