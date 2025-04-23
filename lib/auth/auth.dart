@@ -62,9 +62,6 @@ class _AuthPageState extends State<AuthPage> {
         // was missing the type parameter <User?> so it wasn't getting updates properly
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          print(
-              'AuthPage StreamBuilder state: ${snapshot.connectionState}, hasData: ${snapshot.hasData}');
-
           // Show login/register if not authenticated
           if (!snapshot.hasData) {
             if (_isInitialized) {
