@@ -188,17 +188,14 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     return sortedTracks;
   }
 
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
     // Get session state
+    final isViewingMode = widget.viewingMode || _sessionState.isViewingMode;
+
+    // the playlistId getting dynamically gets isViewing data if true
     final playlistId = _sessionState.playlistId;
     final isHost = _sessionState.isHost;
-    final isViewingMode = widget.viewingMode || _sessionState.isViewingMode;
 
     if (_isEnding) {
       return Center(
@@ -221,7 +218,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     } else
 
     // Shows error message if no playlist Id is found but not when ending session
-    // (handles clearing session state more gracefully in the UI)
     if (playlistId.isEmpty) {
       return const Center(
         child: DefaultTextStyle(
@@ -241,9 +237,9 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
               if (isViewingMode) {
-                Navigator.pop(
-                    context); // clears page from stack - back to previous screen
-                _sessionState.clearSessionState(); // clear session state
+                // Clear only viewing state when exiting viewing mode
+                _sessionState.clearViewingState();
+                Navigator.pop(context);
               } else {
                 Navigator.pushReplacementNamed(context, '/home');
               }
@@ -324,7 +320,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                 children: [
                   PlaylistHeader(
                     item: playlist,
-                    isHost: isHost,
+                    isHost: isViewingMode ? false : isHost,
                     handleEndSession: handleEndSession,
                     handleSavePlaylist: handleSavePlaylist,
                   ),
@@ -354,9 +350,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
   // Stream to listen to playlist changes from Firestore
   Stream<Playlist> _getPlaylistStream(String playlistId) {
-    // final databaseServices =
-    //     DatabaseServices(); // Create an instance of DatabaseServices
-// Check if playlistId is empty or null
+    // Check if playlistId is empty or null
     if (playlistId.isEmpty) {
       // Return an empty stream that emits an error
       return Stream.error('Invalid playlist ID');

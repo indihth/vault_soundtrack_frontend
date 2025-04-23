@@ -17,46 +17,64 @@ class SessionState extends ChangeNotifier {
   bool _isJoining = false;
   bool _isViewingMode = false;
 
+  // Variables for viewing past sessions - these won't affect the active session
+  String _viewingSessionId = '';
+  String _viewingPlaylistId = '';
+  String _viewingSessionName = '';
+  String _viewingSessionDescription = '';
+  String _viewingHostDisplayName = '';
+
   // Past sessions - used to store the past sessions of the user
   List<Map<String, dynamic>> _pastSessions = [];
   bool _isLoading = false; // flag for sessions loading
 
-  // Getters
-  String get sessionId => _sessionId;
-  String get playlistId => _playlistId;
-  String get sessionName => _sessionName;
-  String get sessionDescription => _sessionDescription;
-  String get hostDisplayName => _hostDisplayName;
+  // Getters - dynamically returns viewingMode or active session data
+  String get sessionId => _isViewingMode ? _viewingSessionId : _sessionId;
+  String get playlistId => _isViewingMode ? _viewingPlaylistId : _playlistId;
+  String get sessionName => _isViewingMode ? _viewingSessionName : _sessionName;
+  String get sessionDescription =>
+      _isViewingMode ? _viewingSessionDescription : _sessionDescription;
+  String get hostDisplayName =>
+      _isViewingMode ? _viewingHostDisplayName : _hostDisplayName;
   bool get isHost => _isHost;
   bool get isActive => _isActive;
   bool get isJoining => _isJoining;
   List<Map<String, dynamic>> get pastSessions => _pastSessions;
   bool get isLoading => _isLoading;
-  bool get isViewingMode => _isViewingMode; // added getter for viewing mode
+  bool get isViewingMode => _isViewingMode;
 
   // Setup stream subscription to listen for changes in the session state
   StreamSubscription? _sessionStateSubscription;
 
   // Methods
 
-// view ended session
+  // view ended session
   Future<void> viewPastSession(
       String sessionId, Map<String, dynamic> session) async {
     try {
-      // firebase doesn't get updated in viewing mode - just setting the session state
+      // Use the viewing-specific state variables instead of updating active session data
+      _viewingSessionId = sessionId;
+      _viewingSessionName = session['sessionName'] ?? '';
+      _viewingSessionDescription = session['description'] ?? '';
+      _viewingHostDisplayName = session['hostDisplayName'] ?? '';
+      _viewingPlaylistId = session['playlistId'] ?? '';
 
-      setSessionId(sessionId);
-      setSessionName(session['sessionName'] ?? '');
-      setSessionDescription(session['description'] ?? '');
-      setHostDisplayName(session['hostDisplayName'] ?? '');
-      setPlaylistId(session['playlistId'] ?? '');
-
-      setIsHost(false);
-      setIsActive(false);
+      // Set viewing mode to true
       setViewingMode(true);
     } catch (e) {
       throw Exception('Failed to view past session - $e');
     }
+  }
+
+  // Clear viewing state when exiting viewing mode
+  void clearViewingState() {
+    _viewingSessionId = '';
+    _viewingPlaylistId = '';
+    _viewingSessionName = '';
+    _viewingSessionDescription = '';
+    _viewingHostDisplayName = '';
+    _isViewingMode = false;
+    notifyListeners();
   }
 
   // load past sessions if not already loaded or force refresh
@@ -296,7 +314,7 @@ class SessionState extends ChangeNotifier {
     _hostDisplayName = '';
     _isHost = false;
     _isActive = false;
-    _isViewingMode = false;
+    // Don't clear viewing mode or viewing data here
     notifyListeners();
   }
 
