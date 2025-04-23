@@ -245,7 +245,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                     context); // clears page from stack - back to previous screen
                 _sessionState.clearSessionState(); // clear session state
               } else {
-                Navigator.pushReplacementNamed(context, '/homepage');
+                Navigator.pushReplacementNamed(context, '/home');
               }
             },
           ),
@@ -334,9 +334,12 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                       itemBuilder: (context, index) {
                         Track track = sortedTracks[index];
                         return TrackCard(
-                            // use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
-                            key: ObjectKey(track.trackId),
-                            item: track);
+                          // use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
+                          key: ObjectKey(track.trackId),
+                          item: track,
+                          isViewingMode:
+                              isViewingMode, // show/hide voting buttons
+                        );
                       },
                     ),
                   ),

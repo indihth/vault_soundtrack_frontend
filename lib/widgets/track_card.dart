@@ -8,10 +8,12 @@ import 'package:vault_soundtrack_frontend/mixins/voting_mixin.dart';
 class TrackCard extends StatefulWidget {
   // The data model containing all information about this history item
   final Track item;
+  final bool isViewingMode;
 
   TrackCard({
     Key? key,
     required this.item,
+    this.isViewingMode = false,
   }) : super(key: key);
 
   @override
@@ -70,10 +72,11 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
                   // Song name with ellipsis if too long
                   Text(
                     widget.item.songName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.0,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium,
+                    // style: const TextStyle(
+                    //   fontWeight: FontWeight.bold,
+                    //   fontSize: 16.0,
+                    // ),
                     maxLines: 1,
                     overflow: TextOverflow
                         .ellipsis, // Truncate with ... if text is too long
@@ -83,7 +86,7 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
                   Text(
                     widget.item.artistName,
                     style: TextStyle(
-                      color: Colors.grey[700],
+                      color: Colors.grey[600],
                       fontSize: 14.0,
                     ),
                     maxLines: 1,
@@ -106,29 +109,29 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
             // dispay icon if song is liked
             // if (item.isLiked)
 
-            SizedBox(width: 8.0), // Spacing between icons
+            if (!widget.isViewingMode) ...[
+              SizedBox(width: 16.0), // Spacing between icons
 
-            const SizedBox(width: 8.0),
+              // Up vote icon and text - takes loading state and widget item to get live vote data rom db
+              VoteIcon(
+                isUpVote: true,
+                isVoted: isUpVoted,
+                isLoading: isUpVoteLoading,
+                voteCount: widget.item.upVotes,
+                onTap: () => handleVote(context, widget.item, "up"),
+              ),
 
-            // Up vote icon and text - takes loading state and widget item to get live vote data rom db
-            VoteIcon(
-              isUpVote: true,
-              isVoted: isUpVoted,
-              isLoading: isUpVoteLoading,
-              voteCount: widget.item.upVotes,
-              onTap: () => handleVote(context, widget.item, "up"),
-            ),
+              const SizedBox(width: 8.0),
 
-            const SizedBox(width: 8.0),
-
-            // Down vote icon and text
-            VoteIcon(
-              isUpVote: false,
-              isVoted: isDownVoted,
-              isLoading: isDownVoteLoading,
-              voteCount: widget.item.downVotes,
-              onTap: () => handleVote(context, widget.item, "down"),
-            ),
+              // Down vote icon and text
+              VoteIcon(
+                isUpVote: false,
+                isVoted: isDownVoted,
+                isLoading: isDownVoteLoading,
+                voteCount: widget.item.downVotes,
+                onTap: () => handleVote(context, widget.item, "down"),
+              ),
+            ]
           ],
         ),
       ),
