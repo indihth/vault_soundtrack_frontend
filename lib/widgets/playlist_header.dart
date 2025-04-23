@@ -20,7 +20,12 @@ class PlaylistHeader extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('End Session'),
-          content: const Text('Are you sure you want to end the session?'),
+          content: const Text(
+            'Are you sure you want to end the session?',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(), // Close the dialog
@@ -57,14 +62,9 @@ class PlaylistHeader extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.title,
-                  softWrap: true,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24.0,
-                  ),
-                ),
+                Text(item.title,
+                    softWrap: true,
+                    style: Theme.of(context).textTheme.titleLarge),
                 Text(
                   item.description,
                   softWrap: true,

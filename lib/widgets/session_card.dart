@@ -14,41 +14,68 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 150,
-      // height: 200,
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(0), // remove rounded corners on entire card
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                // width: 150,
-                // height: 150,
-                color: Colors.grey[300],
-                child: const Center(
-                  child: CircularProgressIndicator(),
+          // image container with flexible width
+          AspectRatio(
+            aspectRatio: 1.0, // square image
+            child: ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(3), // rounded corners on image only
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity, // full width of parent
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: Icon(Icons.error_outline, size: 40),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              );
-            },
-            width: 150,
-            height: 150,
+                if (description.isNotEmpty)
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8.0),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 8.0),
-          // Text(
-          //   description,
-          //   style: Theme.of(context).textTheme.bodySmall,
-          // ),
-          // const SizedBox(height: 16.0),
         ],
       ),
     );

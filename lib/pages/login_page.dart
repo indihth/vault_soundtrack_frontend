@@ -87,10 +87,8 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 25),
 
-                  Text(
-                    'T H E  V A U L T',
-                    style: TextStyle(fontSize: 20),
-                  ),
+                  Text('T H E  V A U L T',
+                      style: Theme.of(context).textTheme.titleLarge),
 
                   const SizedBox(height: 25),
 

@@ -79,23 +79,14 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Create Session',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 16),
+                Text('Create Session',
+                    style: Theme.of(context).textTheme.titleLarge),
+                SizedBox(height: 24),
+
                 // pick image text
-                Text(
-                  'Pick an image for your session',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                ImageUploadBtn(),
+                // Text('Pick an image for your session',
+                //     style: Theme.of(context).textTheme.titleLarge),
+                // ImageUploadBtn(),
                 MyTextField(
                     hintText: "Playlist title",
                     obscureText: false,

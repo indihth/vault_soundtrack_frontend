@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vault_soundtrack_frontend/services/user_services.dart';
 import 'package:vault_soundtrack_frontend/state/user_state.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_text_field.dart';
@@ -108,7 +107,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   Text(
                     'T H E  V A U L T',
-                    style: TextStyle(fontSize: 20),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
 
                   const SizedBox(height: 25),

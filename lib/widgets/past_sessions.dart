@@ -74,24 +74,33 @@ class PastSessions extends StatelessWidget {
 
         final sortedSessions = sortSessionsByDate(sessionState.pastSessions);
 
+        if (sortedSessions.isEmpty) {
+          return Center(
+            child: Text(
+              'No past sessions found',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          );
+        }
+
         return GridView.builder(
-          padding: EdgeInsets.all(8),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Two columns
-            childAspectRatio: 0.75, // Adjust for card dimensions
-            crossAxisSpacing: 10, // Horizontal space between items
-            mainAxisSpacing: 10, // Vertical space between items
+          padding: const EdgeInsets.only(bottom: 16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.75, // card proportions
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 10,
           ),
-          // switch fro .builder to .separated to add spacing
-          // scrollDirection: Axis.horizontal,
           itemCount: sortedSessions.length,
+          shrinkWrap: true, // for grid to take only needed space
+          physics: const AlwaysScrollableScrollPhysics(), // scrolling
           itemBuilder: (context, index) {
             final session = sortedSessions[index];
             return GestureDetector(
               onTap: () => _handleSessionSelect(context, session),
               child: SessionCard(
                 title: session['sessionName'] ?? 'Unnamed Session',
-                description: session['description'] ?? 'No description',
+                description: session['description'] ?? '',
                 imageUrl: session['topTrackImageUrl'] ?? 'No image',
               ),
             );
@@ -99,6 +108,5 @@ class PastSessions extends StatelessWidget {
         );
       },
     );
-    // return SessionCard();
   }
 }
