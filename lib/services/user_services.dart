@@ -37,7 +37,7 @@ class UserServices {
       if (userToken == null) return [];
 
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/user/sessions'),
+        Uri.parse('${ApiConstants.baseUrl}/user/dashboard'),
         headers: {
           'Authorization': 'Bearer $userToken',
         },
