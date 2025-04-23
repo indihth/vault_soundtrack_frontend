@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/state/user_state.dart';
-import 'package:vault_soundtrack_frontend/widgets/current_session_card.dart';
+import 'package:vault_soundtrack_frontend/widgets/primary_session_card.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:vault_soundtrack_frontend/services/spotify_services.dart';
 import 'package:vault_soundtrack_frontend/services/playlist_session_services.dart';
@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
     try {
       final userState = Provider.of<UserState>(context, listen: false);
 
-      // if (userState.isLoggingOut) return; // prevent multiple logouts
+      if (userState.isLoggingOut) return; // prevent multiple logouts
       print('Logging out...');
 
       // sets the logout flag to true - AuthPage listens and handles state changes
@@ -62,6 +62,11 @@ class _HomePageState extends State<HomePage> {
       userState.startLogout();
 
       await FirebaseAuth.instance.signOut();
+
+      if (mounted) {
+        // navigate to login page
+        Navigator.pushReplacementNamed(context, '/login-or-register');
+      }
     } catch (e) {
       if (mounted) {
         UIHelpers.showSnackBar(context, 'Error signing out', isError: true);
@@ -99,76 +104,61 @@ class _HomePageState extends State<HomePage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment:
+                MainAxisAlignment.start, // Changed from spaceBetween to start
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // SpotifyAuthButton(onAuthSuccess: onAuthSuccess),
-              Text(
-                "Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? 'User'}",
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // User greeting section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MyIconButton(
-                      primary: true,
-                      iconType: Icons.add,
-                      callback: () {
-                        Navigator.pushNamed(context, '/create-session');
-                      },
-                      text: "Create new \nsession"),
-                  MyIconButton(
-                      iconType: Icons.qr_code_outlined,
-                      callback: () {
-                        Navigator.pushNamed(context, '/join-session');
-                      },
-                      text: "Join a \nsession"),
+                  Text(
+                    "Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? 'User'}",
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                  SizedBox(height: 48),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      MyIconButton(
+                          primary: true,
+                          iconType: Icons.add,
+                          callback: () {
+                            Navigator.pushNamed(context, '/create-session');
+                          },
+                          text: "Create new \nsession"),
+                      MyIconButton(
+                          iconType: Icons.qr_code_outlined,
+                          callback: () {
+                            Navigator.pushNamed(context, '/join-session');
+                          },
+                          text: "Join a \nsession"),
+                    ],
+                  ),
                 ],
               ),
-              SizedBox(height: 20),
-              CurrentSessionCard(),
-              SizedBox(height: 20),
 
-              // MyButton(
-              //     text: "Connect Spotify",
-              //     onTap: () {
-              //       Navigator.pushNamed(context, '/connect-spotify');
-              //     }),
-              // SizedBox(height: 20),
-              // MyButton(
-              //   text: "Join session",
-              //   onTap: () {
-              //     Navigator.pushNamed(context, '/join-session');
-              //   },
-              // ),
-              SizedBox(height: 20),
-              MyButton(
-                text: "User's Sessions",
-                onTap: () {
-                  Navigator.pushNamed(context, '/user-sessions');
-                },
-              ),
-              // 4. Session history title and optional button
-              Text(
-                "Past Sessions",
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              IconButton(
-                icon: Icon(Icons.refresh),
-                onPressed: () {
-                  Provider.of<SessionState>(context, listen: false)
-                      .refreshSessions();
-                },
-              ),
-              SizedBox(height: 10),
+              // Current session card - not in an Expanded widget
+              PrimarySessionCard(),
 
-              // 5. Expandable past sessions list - this will take remaining space
+              // Past sessions - wrapped in Expanded to fill remaining space
               Expanded(
-                child:
-                    PastSessions(), // Use a content-only widget (defined below)
-              ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Past Sessions",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    SizedBox(height: 10),
+
+                    // Make PastSessions fill the remaining space in the column
+                    Expanded(
+                      child: PastSessions(),
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
