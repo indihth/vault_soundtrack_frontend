@@ -17,12 +17,6 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
   @override
   void initState() {
     super.initState();
-
-    // // Listen to session status changes on first load of widget --  NOT NEEDED DUE TO didChangeDependencies
-    // final sessionState = Provider.of<SessionState>(context, listen: false);
-    // sessionState.listenToSessionStatus(sessionState.sessionId);
-
-    // print('session state active INIT: ${sessionState.isActive}');
   }
 
   // Flutter lifecycle method - Runs after initState, when dependencies change and before build()
@@ -33,7 +27,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
     print('session state active didChanged running');
 
     // Check if session is active and needs to redirect
-    final sessionState = Provider.of<SessionState>(context);
+    final sessionState = Provider.of<SessionState>(context, listen: true);
     sessionState.listenToSessionStatus(sessionState.sessionId);
 
     print('session state active didChanged: ${sessionState.isActive}');
@@ -116,75 +110,134 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
         child: Container(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // display session name and description
-              Text(
-                sessionState.sessionName,
-                style: TextStyle(
-                    fontSize: 24, color: Theme.of(context).colorScheme.primary),
+              Column(
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        sessionState.sessionName,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        sessionState.sessionDescription,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Theme.of(context).colorScheme.secondary),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // QR code section
+                  Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: QrImageView(
+                          data: sessionState.sessionId,
+                          // 'sample://open.my.app/#/join-session/${sessionState.sessionId}',
+                          version: QrVersions.auto,
+                          size: 200.0,
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.all(10),
+                          errorStateBuilder: (cxt, err) {
+                            return Center(
+                              child: Text(
+                                "Uh oh! Something went wrong...",
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      // display session name and description
+                      const SizedBox(height: 6),
+                      Text(
+                        "Scan QR code to join",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              Text(
-                sessionState.sessionDescription,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 18,
-                    color: Theme.of(context).colorScheme.secondary),
+
+              // Center text section
+              Column(
+                children: [
+                  Text(
+                    'Users joining...',
+                    style: TextStyle(
+                        fontSize: 24,
+                        color: Theme.of(context).colorScheme.primary),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Display list of users in session
+                  SizedBox(
+                    height: 100,
+                    child: Consumer<SessionState>(
+                      builder: (context, sessionState, _) {
+                        if (sessionState.sessionUsers.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'Waiting for users to join...',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          itemCount: sessionState.sessionUsers.length,
+                          itemBuilder: (context, index) {
+                            final user = sessionState.sessionUsers[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                // Access the displayName property of the user map
+                                user['displayName'] ?? 'Unknown User',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  // For users
+                  if (!sessionState.isHost) ...[
+                    Text(
+                      'The host will start the session \nwhen everyone is ready',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+
+                    // For host
+                  ] else ...[
+                    Text(
+                      "Continue when all users have joined",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Hosted by: ${sessionState.hostDisplayName}',
-                style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.secondary),
-              ),
-              Text(
-                'Waiting for all users to join...',
-                style: TextStyle(
-                    fontSize: 24, color: Theme.of(context).colorScheme.primary),
-              ),
-              const SizedBox(height: 20),
-              if (!sessionState.isHost) ...[
-                Text(
-                  'The host will start the session when everyone is ready',
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.secondary),
-                ),
-              ] else ...[
-                Text(
-                  'Press button when ready',
-                  // style: TextStyle(fontSize: 24),
-                ),
+
+              // Display button only to host
+              if (sessionState.isHost)
                 MyButton(
                   text: "Lets go!",
                   // onTap: displayUsersInSession,
                   onTap: handleTap,
                 ),
-                const SizedBox(height: 20),
-              ],
-              Text(
-                'Invite friends to join your session',
-                style: TextStyle(
-                    fontSize: 24, color: Theme.of(context).colorScheme.primary),
-              ),
-              const SizedBox(height: 20),
-              QrImageView(
-                data: sessionState.sessionId,
-                // 'sample://open.my.app/#/join-session/${sessionState.sessionId}',
-                version: QrVersions.auto,
-                size: 200.0,
-                backgroundColor: Colors.white,
-                padding: EdgeInsets.all(10),
-                errorStateBuilder: (cxt, err) {
-                  return Center(
-                    child: Text(
-                      "Uh oh! Something went wrong...",
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                },
-              ),
+              const SizedBox(height: 14),
             ],
           ),
         ),

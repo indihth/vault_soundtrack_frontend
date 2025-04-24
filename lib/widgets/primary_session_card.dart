@@ -11,12 +11,12 @@ class PrimarySessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SessionState>(
       builder: (context, sessionState, _) {
+        // check if session is active or waiting and set route name accordingly
+        var routeName =
+            sessionState.isWaiting ? '/waiting-room' : '/live-session';
+
         // if no active session, display most recent session with more details
         if (sessionState.sessionId.isEmpty) {
-          // return const SizedBox(
-          //   height: 40,
-          // ); // No sessions to display
-          // return const SizedBox.shrink(); // No sessions to display
           return SizedBox(
             height: 80,
             child: Center(
@@ -40,7 +40,7 @@ class PrimarySessionCard extends StatelessWidget {
               ),
               SizedBox(height: 16),
               GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/live-session'),
+                onTap: () => Navigator.pushNamed(context, routeName),
                 behavior: HitTestBehavior.opaque, //
                 child: Container(
                   // needs to be wrapped in container to be tappable

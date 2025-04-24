@@ -14,6 +14,8 @@ class SessionState extends ChangeNotifier {
   String _hostDisplayName = '';
   bool _isHost = false;
   bool _isActive = false;
+  bool _isWaiting = false;
+
   bool _isJoining = false;
   bool _isViewingMode = false;
 
@@ -28,6 +30,9 @@ class SessionState extends ChangeNotifier {
   List<Map<String, dynamic>> _pastSessions = [];
   bool _isLoading = false; // flag for sessions loading
 
+  // Track users in session as they join
+  List<Map<String, dynamic>> _sessionUsers = [];
+
   // Getters - dynamically returns viewingMode or active session data
   String get sessionId => _isViewingMode ? _viewingSessionId : _sessionId;
   String get playlistId => _isViewingMode ? _viewingPlaylistId : _playlistId;
@@ -38,8 +43,10 @@ class SessionState extends ChangeNotifier {
       _isViewingMode ? _viewingHostDisplayName : _hostDisplayName;
   bool get isHost => _isHost;
   bool get isActive => _isActive;
+  bool get isWaiting => _isWaiting;
   bool get isJoining => _isJoining;
   List<Map<String, dynamic>> get pastSessions => _pastSessions;
+  List<Map<String, dynamic>> get sessionUsers => _sessionUsers;
   bool get isLoading => _isLoading;
   bool get isViewingMode => _isViewingMode;
 
@@ -135,6 +142,9 @@ class SessionState extends ChangeNotifier {
           final status =
               data['status'] ?? 'waiting'; // Default to 'waiting' if not set
 
+          // parse session users and update state
+          _parseSessionUsers(data);
+
           if (status == 'active' && !_isActive) {
             // Session is now active
             setIsActive(true);
@@ -151,6 +161,10 @@ class SessionState extends ChangeNotifier {
 
             // Notify listeners of the change
             notifyListeners();
+          } else if (status == 'waiting' && !_isWaiting) {
+            // Session is in waiting status
+            setIsWaiting(true);
+            notifyListeners();
           } else if (status == 'ended' && _isActive) {
             // Session has ended
             setIsActive(false);
@@ -158,6 +172,47 @@ class SessionState extends ChangeNotifier {
           }
         }
       });
+    }
+  }
+
+// handle session users - convert from Map to List
+  void _parseSessionUsers(Map<String, dynamic> data) {
+    final users = data['users'];
+
+    // clear existing users when no users in data
+    if (users == null) {
+      _sessionUsers = [];
+      notifyListeners();
+      return;
+    }
+
+    try {
+      // use .entries.map to convert to a list of maps
+      _sessionUsers = users.entries.map<Map<String, dynamic>>((entry) {
+        final userData = entry.value;
+        if (userData is Map<String, dynamic>) {
+          return {
+            // 'userId': entry.key,
+            'displayName': userData['displayName'] ?? 'Unknown',
+            // 'isHost': userData['isHost'] ?? false,
+            // 'isActive': userData['isActive'] ?? false,
+          };
+        } else {
+          // Fallback for simple string values
+          return {
+            // 'userId': entry.key,
+            'displayName': userData.toString(),
+            // 'isHost': false,
+            // 'isActive': true,
+          };
+        }
+      }).toList();
+      print('########################## session users: $_sessionUsers');
+      notifyListeners();
+    } catch (e) {
+      print('Error parsing session users: $e');
+      _sessionUsers = []; // reset to empty list on error
+      notifyListeners();
     }
   }
 
@@ -314,6 +369,7 @@ class SessionState extends ChangeNotifier {
     _hostDisplayName = '';
     _isHost = false;
     _isActive = false;
+    _isWaiting = false;
     // Don't clear viewing mode or viewing data here
     notifyListeners();
   }
@@ -356,6 +412,11 @@ class SessionState extends ChangeNotifier {
 
   void setIsActive(bool isActive) {
     _isActive = isActive;
+    notifyListeners();
+  }
+
+  void setIsWaiting(bool isWaiting) {
+    _isWaiting = isWaiting;
     notifyListeners();
   }
 
