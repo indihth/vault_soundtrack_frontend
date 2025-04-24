@@ -61,12 +61,12 @@ class PastSessions extends StatelessWidget {
     return Consumer<SessionState>(
       builder: (context, sessionState, _) {
         // initial load of sessions
-        if (sessionState.pastSessions.isEmpty && !sessionState.isLoading) {
-          // wrap in addPostFrameCallback to avoid calling setState during build
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            sessionState.loadPastSessions();
-          });
-        }
+        // if (sessionState.pastSessions.isEmpty && !sessionState.isLoading) {
+        //   // wrap in addPostFrameCallback to avoid calling setState during build
+        //   WidgetsBinding.instance.addPostFrameCallback((_) {
+        //     sessionState.loadPastSessions();
+        //   });
+        // }
 
         if (sessionState.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -87,9 +87,9 @@ class PastSessions extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75, // card proportions
+            childAspectRatio: 0.70, // card proportions
             crossAxisSpacing: 16,
-            mainAxisSpacing: 10,
+            mainAxisSpacing: 16,
           ),
           itemCount: sortedSessions.length,
           shrinkWrap: true, // for grid to take only needed space

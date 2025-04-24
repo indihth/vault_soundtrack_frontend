@@ -55,25 +55,29 @@ class SessionCard extends StatelessWidget {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (description.isNotEmpty)
+          Flexible(
+            fit: FlexFit.loose, // allows the text to take up remaining space
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min, // take min space needed
+                children: [
                   Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    maxLines: 2,
+                    title,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-              ],
+                  if (description.isNotEmpty)
+                    Text(
+                      description,
+                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
             ),
           ),
         ],

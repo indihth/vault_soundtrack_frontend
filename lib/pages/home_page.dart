@@ -64,10 +64,12 @@ class _HomePageState extends State<HomePage> {
       await FirebaseAuth.instance.signOut();
 
       if (mounted) {
+        print('User logged out??');
         // navigate to login page
-        Navigator.pushReplacementNamed(context, '/login-or-register');
+        Navigator.pushReplacementNamed(context, '/auth');
       }
     } catch (e) {
+      print('Error logging out: $e');
       if (mounted) {
         UIHelpers.showSnackBar(context, 'Error signing out', isError: true);
       }
@@ -117,24 +119,26 @@ class _HomePageState extends State<HomePage> {
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                   SizedBox(height: 48),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      MyIconButton(
-                          primary: true,
-                          iconType: Icons.add,
-                          callback: () {
-                            Navigator.pushNamed(context, '/create-session');
-                          },
-                          text: "Create new \nsession"),
-                      MyIconButton(
-                          iconType: Icons.qr_code_outlined,
-                          callback: () {
-                            Navigator.pushNamed(context, '/join-session');
-                          },
-                          text: "Join a \nsession"),
-                    ],
-                  ),
+                  FittedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        MyIconButton(
+                            primary: true,
+                            iconType: Icons.add,
+                            callback: () {
+                              Navigator.pushNamed(context, '/create-session');
+                            },
+                            text: "Create new \nsession"),
+                        MyIconButton(
+                            iconType: Icons.qr_code_outlined,
+                            callback: () {
+                              Navigator.pushNamed(context, '/join-session');
+                            },
+                            text: "Join a \nsession"),
+                      ],
+                    ),
+                  )
                 ],
               ),
 
@@ -146,9 +150,23 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Past Sessions",
-                      style: Theme.of(context).textTheme.titleMedium,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Past Sessions",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.refresh),
+                          onPressed: () {
+                            final sessionState = Provider.of<SessionState>(
+                                context,
+                                listen: false);
+                            sessionState.loadPastSessions();
+                          },
+                        ),
+                      ],
                     ),
                     SizedBox(height: 10),
 
