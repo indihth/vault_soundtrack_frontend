@@ -14,15 +14,15 @@ ThemeData darkMode = ThemeData(
       // inversePrimary: Colors.grey.shade300,
     ),
     textTheme: ThemeData.dark().textTheme.copyWith(
-          titleMedium: TextStyle(
-            color: Color(0xFFFFFFFF),
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0.5,
-            color: Colors.black87,
-          ),
+        // titleMedium: TextStyle(
+        //   color: Color(0xFFFFFFFF),
+        // ),
+        // bodyMedium: TextStyle(
+        //   fontSize: 16,
+        //   fontWeight: FontWeight.w400,
+        //   letterSpacing: 0.5,
+        //   color: Colors.black87,
+        // ),
         )
 
     // More light theme properties here
