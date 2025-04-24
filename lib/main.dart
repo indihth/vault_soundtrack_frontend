@@ -8,7 +8,6 @@ import 'package:vault_soundtrack_frontend/pages/session_list_page.dart';
 import 'package:vault_soundtrack_frontend/pages/user_sessions_list_page.dart';
 import 'package:vault_soundtrack_frontend/services/session_image_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
-import 'package:vault_soundtrack_frontend/widgets/deep_link_listener.dart';
 import 'package:vault_soundtrack_frontend/firebase_options.dart';
 import 'package:vault_soundtrack_frontend/pages/connect_spotify_page.dart';
 import 'package:vault_soundtrack_frontend/pages/create_session_page.dart';
@@ -41,15 +40,6 @@ void main() async {
       child: const MyApp(),
     ),
   );
-
-// NEEDED? NO
-  // initialize AppLinks
-  final appLinks = AppLinks();
-
-  // listen for incoming links
-  final sub = appLinks.uriLinkStream.listen((Uri uri) {
-    print('Received uri: ${uri.toString()}');
-  });
 }
 
 class MyApp extends StatelessWidget {
@@ -68,8 +58,7 @@ class MyApp extends StatelessWidget {
           theme: lightMode,
           darkTheme: darkMode,
           debugShowCheckedModeBanner: false,
-          // home: ListeningHistoryPage(),
-          home: DeepLinkListener(child: AuthPage()),
+          home: AuthPage(),
           routes: {
             '/auth': (context) => const AuthPage(),
             '/home': (context) => HomePage(),
