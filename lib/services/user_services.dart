@@ -45,7 +45,6 @@ class UserServices {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('User sessions: $data');
         return List<Map<String, dynamic>>.from(data['sessions'] ??
             []); // cast to specific type - make a model class later
       } else {
