@@ -22,12 +22,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // get current user id
   final userId = FirebaseAuth.instance.currentUser?.uid;
+  late SessionState _sessionState;
 
   String? sessionMessage; // message from the server API request
   Map<String, dynamic>? playlistResult; // message from the server API request
   List<String> sessions = []; // list of sessions from the server API request
 
   String? idToken;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _sessionState = Provider.of<SessionState>(context, listen: false);
+
+    // only load after widget is mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _sessionState
+          .loadSessions(); // load sessions when the widget is initialized
+    });
+  }
 
   handleCreatePlaylist() async {
     try {
@@ -53,7 +67,7 @@ class _HomePageState extends State<HomePage> {
   logout() async {
     final userState = Provider.of<UserState>(context, listen: false);
     try {
-      print('logging out, userState.isLoggingOut: ${userState.isLoggingOut}');
+      print('Logout started');
 
       if (userState.isLoggingOut) return; // prevent multiple logouts
 
@@ -61,15 +75,24 @@ class _HomePageState extends State<HomePage> {
       userState.startLogout();
 
       await FirebaseAuth.instance.signOut();
+      // clear states
+      _sessionState.clearSessionState();
+      _sessionState.clearViewingState();
+
+      print('Firebase signOut completed');
+// force rebuild of the widget tree to update the UI
+      if (mounted) {
+        setState(() {});
+      }
     } catch (e) {
       print('Error logging out: $e');
       if (mounted) {
         UIHelpers.showSnackBar(context, 'Error signing out', isError: true);
       }
-      userState.endLogout();
     } finally {
       // Reset the logout flag after the operation is complete
       userState.endLogout();
+      print('Logout process finished');
     }
   }
 
@@ -153,10 +176,7 @@ class _HomePageState extends State<HomePage> {
                         IconButton(
                           icon: Icon(Icons.refresh),
                           onPressed: () {
-                            final sessionState = Provider.of<SessionState>(
-                                context,
-                                listen: false);
-                            sessionState.loadSessions();
+                            _sessionState.loadSessions();
                           },
                         ),
                       ],
