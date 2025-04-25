@@ -13,7 +13,9 @@ class PastSessions extends StatelessWidget {
     // BuildContext context, DocumentSnapshot session) async {
     try {
       final sessionState = Provider.of<SessionState>(context, listen: false);
-      await sessionState.viewPastSession(session['id'], session);
+      await sessionState.viewPastSession(session['id'], session,
+          isViewing: true);
+      print('session image: ${session['topTrackImageUrl']}');
 
       // Navigate to live session
       if (context.mounted) {
@@ -64,7 +66,7 @@ class PastSessions extends StatelessWidget {
         // if (sessionState.pastSessions.isEmpty && !sessionState.isLoading) {
         //   // wrap in addPostFrameCallback to avoid calling setState during build
         //   WidgetsBinding.instance.addPostFrameCallback((_) {
-        //     sessionState.loadPastSessions();
+        //     sessionState.loadSessions();
         //   });
         // }
 
