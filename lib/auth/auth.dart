@@ -62,19 +62,14 @@ class _AuthPageState extends State<AuthPage> {
       body: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
+          print('Auth state changed: hasData=${snapshot.hasData}');
+          print('Auth state user: ${FirebaseAuth.instance.currentUser?.uid}');
           // Show login/register if not authenticated
           if (!snapshot.hasData) {
-            // if (_isInitialized) {
-            //   // reset the state when logged out, clean for next login
-
-            //   // Future.microtastk is used to ensure that the state is reset after the widget is built
-            //   // and not before, preventing any potential issues with the widget tree
-            //   Future.microtask(() {
-            //     _userState.resetState();
-            //   });
-            // }
+            print('No auth data - should show login page');
             return LoginOrRegister();
           } else {
+            print('Has auth data - showing home page');
             return HomePage();
           }
 
