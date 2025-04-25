@@ -24,16 +24,17 @@ class _AuthPageState extends State<AuthPage> {
     super.initState();
 
     // initialize UserState
-    _userState = Provider.of<UserState>(context, listen: false);
 
     // waits until the widget is fully built before calling _initializeUserState
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeUserState();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _initializeUserState();
+    // });
   }
 
   // user state must be handled after widget is mounted to avoid calling setState on unmounted widget
   Future<void> _initializeUserState() async {
+    _userState = Provider.of<UserState>(context, listen: true);
+
     await _userState.updateUserState();
     if (mounted) {
       setState(() {
@@ -58,67 +59,68 @@ class _AuthPageState extends State<AuthPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // listens to auth state - if user is logged in or not
-      body: StreamBuilder<User?>(
-        // was missing the type parameter <User?> so it wasn't getting updates properly
+      body: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           // Show login/register if not authenticated
           if (!snapshot.hasData) {
-            if (_isInitialized) {
-              // reset the state when logged out, clean for next login
+            // if (_isInitialized) {
+            //   // reset the state when logged out, clean for next login
 
-              // Future.microtastk is used to ensure that the state is reset after the widget is built
-              // and not before, preventing any potential issues with the widget tree
-              Future.microtask(() {
-                _userState.resetState();
-              });
-            }
+            //   // Future.microtastk is used to ensure that the state is reset after the widget is built
+            //   // and not before, preventing any potential issues with the widget tree
+            //   Future.microtask(() {
+            //     _userState.resetState();
+            //   });
+            // }
             return LoginOrRegister();
+          } else {
+            return HomePage();
           }
 
           // If we haven't initialized user state yet or it's loading, show loading
-          if (_isLoading || !_isInitialized) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          // if (_isLoading || !_isInitialized) {
+          //   return const Center(child: CircularProgressIndicator());
+          // }
 
           // User is authenticated, now check Spotify connection
-          return Consumer<UserState>(
-            builder: (context, userState, _) {
-              // If not connected to Spotify, force ConnectSpotifyPage
-              if (userState.isNewUser && !userState.isSpotifyConnected) {
-                return PopScope(
-                  child: const ConnectSpotifyPage(),
-                );
-              } else if (userState.isNewUser && userState.isSpotifyConnected) {
-                // only after widget is built - avoids calling setState on unmounted widget
-                // previousl setup caused a flash of the homescreen before the transition to ConnectSpotifyPage
+          // return Consumer<UserState>(
+          //   builder: (context, userState, _) {
+          //     // If not connected to Spotify, force ConnectSpotifyPage
+          //     if (userState.isNewUser && !userState.isSpotifyConnected) {
+          //       return PopScope(
+          //         child: const ConnectSpotifyPage(),
+          //       );
+          //     } else if (userState.isNewUser && userState.isSpotifyConnected) {
+          //       // only after widget is built - avoids calling setState on unmounted widget
+          //       // previousl setup caused a flash of the homescreen before the transition to ConnectSpotifyPage
 
-                // schedules navigation callback after the widget is built
-                Future.microtask(() {
-                  userState.clearNewUserFlag();
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => HomePage()),
-                      (route) => false // remove all previous routes
-                      );
-                });
+          //       // schedules navigation callback after the widget is built
+          //       Future.microtask(() {
+          //         userState.clearNewUserFlag();
+          //         Navigator.of(context).pushAndRemoveUntil(
+          //             MaterialPageRoute(builder: (_) => HomePage()),
+          //             (route) => false // remove all previous routes
+          //             );
+          //       });
 
-                // laoding indicator during the transition
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 20),
-                      Text('Connected to Spotify! Redirecting...')
-                    ],
-                  ),
-                );
-              }
+          //       // laoding indicator during the transition
+          //       return Center(
+          //         child: Column(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: [
+          //             CircularProgressIndicator(),
+          //             SizedBox(height: 20),
+          //             Text('Connected to Spotify! Redirecting...')
+          //           ],
+          //         ),
+          //       );
+          //     }
 
-              // Only show HomePage if both authenticated and Spotify connected
-              return HomePage();
-            },
-          );
+          //     // Only show HomePage if both authenticated and Spotify connected
+          //     return HomePage();
+          //   },
+          // );
         },
       ),
     );
