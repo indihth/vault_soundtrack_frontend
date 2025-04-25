@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/models/playlist.dart';
+import 'package:vault_soundtrack_frontend/state/session_state.dart';
 
 class PlaylistHeader extends StatelessWidget {
   final VoidCallback handleSavePlaylist;
   final VoidCallback handleEndSession;
   final Playlist item;
   final bool isHost;
+  final bool isViewingMode;
+  final String imageUrl; // Placeholder image
+
   const PlaylistHeader(
       {super.key,
       required this.item,
       required this.isHost,
+      this.isViewingMode = false,
+      this.imageUrl = '',
       required this.handleSavePlaylist,
       required this.handleEndSession});
 
@@ -48,32 +55,90 @@ class PlaylistHeader extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius:
-                  BorderRadius.circular(2.0), // Rounded corners for the image
-              child: Container(
-                width: 126,
-                height: 126,
-                color: Colors.grey[300],
-                child: const Icon(Icons.music_note, color: Colors.grey),
-              ),
-            ),
-            const SizedBox(width: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.title,
-                    softWrap: true,
-                    style: Theme.of(context).textTheme.titleLarge),
-                Text(
-                  item.description,
-                  softWrap: true,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14.0,
+            // Display playlist image if 'viewing'
+            if (isViewingMode)
+              SizedBox(
+                width: 120,
+                child: ClipRRect(
+                  borderRadius:
+                      BorderRadius.circular(3), // rounded corners on image only
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity, // full width of parent
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(Icons.error_outline, size: 40),
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ],
+              ),
+
+            const SizedBox(width: 20),
+
+            // Display playlist title and description
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 0.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title,
+                        softWrap: true,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    // Text(
+                    //   item.description,
+                    //   softWrap: true,
+                    //   style: const TextStyle(
+                    //     color: Colors.grey,
+                    //     fontSize: 14.0,
+                    //   ),
+                    // ),
+                    const SizedBox(height: 8),
+                    Consumer<SessionState>(
+                      builder: (context, sessionState, _) {
+                        if (sessionState.sessionUsers.isEmpty) {
+                          return Text(
+                            'Waiting for users to join...',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey,
+                                    ),
+                          );
+                        }
+
+                        // Join user names with commas
+                        final userNames = sessionState.sessionUsers
+                            .map(
+                                (user) => user['displayName'] ?? 'Unknown User')
+                            .join(' | ');
+
+                        return Text(
+                          userNames,
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: Colors.grey,
+                                  ),
+                          softWrap: true,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

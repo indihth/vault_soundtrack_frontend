@@ -196,6 +196,7 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     // the playlistId getting dynamically gets isViewing data if true
     final playlistId = _sessionState.playlistId;
     final isHost = _sessionState.isHost;
+    final imageUrl = _sessionState.imageUrl;
 
     if (_isEnding) {
       return Center(
@@ -231,20 +232,20 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     return Scaffold(
       appBar: AppBar(
         // let user navigate back to homepage - adjust stack after joining
-        automaticallyImplyLeading: false, // automatically hides added back btn
+        // automaticallyImplyLeading: false, // automatically hides added back btn
         actions: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (isViewingMode) {
-                // Clear only viewing state when exiting viewing mode
-                _sessionState.clearViewingState();
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacementNamed(context, '/home');
-              }
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.arrow_back),
+          //   onPressed: () {
+          //     if (isViewingMode) {
+          //       // Clear only viewing state when exiting viewing mode
+          //       _sessionState.clearViewingState();
+          //       Navigator.pop(context);
+          //     } else {
+          //       Navigator.pushReplacementNamed(context, '/home');
+          //     }
+          //   },
+          // ),
           if (!isViewingMode) // don't show QR code in viewing mode
             IconButton(
               icon: const Icon(Icons.qr_code),
@@ -323,6 +324,8 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                     isHost: isViewingMode ? false : isHost,
                     handleEndSession: handleEndSession,
                     handleSavePlaylist: handleSavePlaylist,
+                    isViewingMode: isViewingMode,
+                    imageUrl: imageUrl,
                   ),
                   Expanded(
                     child: ListView.builder(

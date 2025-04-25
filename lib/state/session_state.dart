@@ -25,6 +25,7 @@ class SessionState extends ChangeNotifier {
   String _viewingSessionName = '';
   String _viewingSessionDescription = '';
   String _viewingHostDisplayName = '';
+  String _viewingImageUrl = '';
 
   // Past sessions - used to store the past sessions of the user
   List<Map<String, dynamic>> _pastSessions = [];
@@ -41,6 +42,8 @@ class SessionState extends ChangeNotifier {
       _isViewingMode ? _viewingSessionDescription : _sessionDescription;
   String get hostDisplayName =>
       _isViewingMode ? _viewingHostDisplayName : _hostDisplayName;
+  String get imageUrl => _isViewingMode ? _viewingImageUrl : '';
+
   bool get isHost => _isHost;
   bool get isActive => _isActive;
   bool get isWaiting => _isWaiting;
@@ -56,18 +59,40 @@ class SessionState extends ChangeNotifier {
   // Methods
 
   // view ended session
-  Future<void> viewPastSession(
-      String sessionId, Map<String, dynamic> session) async {
+  Future<void> viewPastSession(String sessionId, Map<String, dynamic> session,
+      {bool isViewing = false}) async {
+    print('viewing mode is: $isViewing');
     try {
-      // Use the viewing-specific state variables instead of updating active session data
-      _viewingSessionId = sessionId;
-      _viewingSessionName = session['sessionName'] ?? '';
-      _viewingSessionDescription = session['description'] ?? '';
-      _viewingHostDisplayName = session['hostDisplayName'] ?? '';
-      _viewingPlaylistId = session['playlistId'] ?? '';
+      if (isViewing) {
+        // If already in viewing mode, clear the state first
+        clearViewingState();
+        // Use the viewing-specific state variables instead of updating active session data
+        _viewingSessionId = sessionId;
+        _viewingSessionName = session['sessionName'] ?? '';
+        _viewingSessionDescription = session['description'] ?? '';
+        _viewingHostDisplayName = session['hostDisplayName'] ?? '';
+        _viewingImageUrl = session['topTrackImageUrl'] ?? '';
+        _viewingPlaylistId = session['playlistId'] ?? '';
 
-      // Set viewing mode to true
-      setViewingMode(true);
+        _parseSessionUsers(session);
+
+        print('##################### viewing ImageURL: $_viewingImageUrl');
+        // Set viewing mode to true
+        setViewingMode(true);
+      } else {
+        // If not viewing, set the active session data
+        _sessionId = sessionId;
+        _sessionName = session['sessionName'] ?? '';
+        _sessionDescription = session['description'] ?? '';
+        _hostDisplayName = session['hostDisplayName'] ?? '';
+        _playlistId = session['playlistId'] ?? '';
+
+        _parseSessionUsers(session['users']);
+
+        print('not viewing mode');
+        // Set viewing mode to false
+        setViewingMode(false);
+      }
     } catch (e) {
       throw Exception('Failed to view past session - $e');
     }
@@ -80,12 +105,13 @@ class SessionState extends ChangeNotifier {
     _viewingSessionName = '';
     _viewingSessionDescription = '';
     _viewingHostDisplayName = '';
+    _viewingImageUrl = '';
     _isViewingMode = false;
     notifyListeners();
   }
 
   // load past sessions if not already loaded or force refresh
-  Future<void> loadPastSessions({bool forceRefresh = false}) async {
+  Future<void> loadSessions({bool forceRefresh = false}) async {
     // skip if already loading or if data exists and no force refresh
     if (_isLoading || (_pastSessions.isNotEmpty && !forceRefresh)) {
       return;
@@ -102,12 +128,38 @@ class SessionState extends ChangeNotifier {
         return session['status'] == 'active' || session['status'] == 'waiting';
       }).toList();
 
+      // filter for most recent active session and store in state
+      // if (activeSessions.isNotEmpty) {
+      //   activeSessions.sort((a, b) => (b['createdAt']['_seconds:'])
+      //       .compareTo(a['createdAt']['_seconds:']));
+      //   var mostRecentSession = activeSessions.first;
+
+      //   // var mostRecentSession = mostRecentSessions.; // get the first session
+
+      //   setSessionId(mostRecentSession['id']);
+      //   setPlaylistId(mostRecentSession['playlistId']);
+      //   setSessionName(mostRecentSession['sessionName']);
+      //   setSessionDescription(mostRecentSession['description']);
+      //   // setHostDisplayName(mostRecentSession['hostDisplayName']);
+
+      //   // parse session users and update state
+      //   _parseSessionUsers(mostRecentSession['users']);
+
+      //   setIsActive(mostRecentSession['status'] == 'active');
+      //   setIsWaiting(mostRecentSession['status'] == 'waiting');
+
+      //   setIsHost(true); // testing
+      //   // setIsHost(mostRecentSession['hostId'] ==
+      //   //     FirebaseAuth
+      //   //         .instance.currentUser?.uid); // if HostId matches current userId
+      // }
+
       _pastSessions = userSessions.where((session) {
         return session['status'] == 'ended';
       }).toList();
 
       print('active sessions: $activeSessions');
-      print('past sessions: $_pastSessions');
+      // print('past sessions: $_pastSessions');
     } catch (e) {
       print('Error loading sessions: $e');
     } finally {
@@ -118,7 +170,7 @@ class SessionState extends ChangeNotifier {
 
   void refreshSessions() {
     // called when a a user is done with a new session
-    loadPastSessions(forceRefresh: true);
+    loadSessions(forceRefresh: true);
   }
 
   // Listen to session status changes in Firestore, indicate if host has started session
@@ -370,6 +422,8 @@ class SessionState extends ChangeNotifier {
     _isHost = false;
     _isActive = false;
     _isWaiting = false;
+    _pastSessions = []; // Clear past sessions
+    _sessionUsers = []; // Clear session users
     // Don't clear viewing mode or viewing data here
     notifyListeners();
   }
@@ -412,6 +466,7 @@ class SessionState extends ChangeNotifier {
 
   void setIsActive(bool isActive) {
     _isActive = isActive;
+    setIsWaiting(false); // can't be active and waiting at the same time
     notifyListeners();
   }
 
