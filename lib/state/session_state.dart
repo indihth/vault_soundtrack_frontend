@@ -34,15 +34,32 @@ class SessionState extends ChangeNotifier {
   // Track users in session as they join
   List<Map<String, dynamic>> _sessionUsers = [];
 
-  // Getters - dynamically returns viewingMode or active session data
-  String get sessionId => _isViewingMode ? _viewingSessionId : _sessionId;
-  String get playlistId => _isViewingMode ? _viewingPlaylistId : _playlistId;
-  String get sessionName => _isViewingMode ? _viewingSessionName : _sessionName;
-  String get sessionDescription =>
-      _isViewingMode ? _viewingSessionDescription : _sessionDescription;
-  String get hostDisplayName =>
-      _isViewingMode ? _viewingHostDisplayName : _hostDisplayName;
-  String get imageUrl => _isViewingMode ? _viewingImageUrl : '';
+  // Getters
+
+  // Active session getters
+  String get sessionId => _sessionId;
+  String get playlistId => _playlistId;
+  String get sessionName => _sessionName;
+  String get sessionDescription => _sessionDescription;
+  String get hostDisplayName => _hostDisplayName;
+
+  // Viewing session getters
+  String get viewingSessionId => _viewingSessionId;
+  String get viewingPlaylistId => _viewingPlaylistId;
+  String get viewingSessionName => _viewingSessionName;
+  String get viewingSessionDescription => _viewingSessionDescription;
+  String get viewingHostDisplayName => _viewingHostDisplayName;
+  String get viewingImageUrl => _viewingImageUrl;
+
+  // // Getters - dynamically returns viewingMode or active session data
+  // String get sessionId => _isViewingMode ? _viewingSessionId : _sessionId;
+  // String get playlistId => _isViewingMode ? _viewingPlaylistId : _playlistId;
+  // String get sessionName => _isViewingMode ? _viewingSessionName : _sessionName;
+  // String get sessionDescription =>
+  //     _isViewingMode ? _viewingSessionDescription : _sessionDescription;
+  // String get hostDisplayName =>
+  //     _isViewingMode ? _viewingHostDisplayName : _hostDisplayName;
+  // String get imageUrl => _isViewingMode ? _viewingImageUrl : '';
 
   bool get isHost => _isHost;
   bool get isActive => _isActive;
@@ -158,8 +175,8 @@ class SessionState extends ChangeNotifier {
         return session['status'] == 'ended';
       }).toList();
 
-      print('active sessions: $activeSessions');
-      // print('past sessions: $_pastSessions');
+      // print('active sessions: $activeSessions');
+      print('past sessions: $_pastSessions');
     } catch (e) {
       print('Error loading sessions: $e');
     } finally {

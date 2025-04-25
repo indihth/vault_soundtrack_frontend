@@ -166,7 +166,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     final sortedTracks = List<Track>.from(tracks); // creates a copy of the list
 
     // calculate total votes for each track
-
     sortedTracks.sort((a, b) {
       // sort by total votes (upvotes - downvotes) in descending order
       int voteComparison =
@@ -194,9 +193,12 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     final isViewingMode = widget.viewingMode || _sessionState.isViewingMode;
 
     // the playlistId getting dynamically gets isViewing data if true
-    final playlistId = _sessionState.playlistId;
+    final playlistId = isViewingMode
+        ? _sessionState.viewingPlaylistId
+        : _sessionState.playlistId;
+
     final isHost = _sessionState.isHost;
-    final imageUrl = _sessionState.imageUrl;
+    final imageUrl = _sessionState.viewingImageUrl;
 
     if (_isEnding) {
       return Center(
@@ -231,6 +233,17 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
     }
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              if (isViewingMode) {
+                // clear only viewing state when exiting viewing mode
+                _sessionState.clearViewingState();
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/home');
+              }
+            },
+            icon: const Icon(Icons.arrow_back)),
         // let user navigate back to homepage - adjust stack after joining
         // automaticallyImplyLeading: false, // automatically hides added back btn
         actions: [
