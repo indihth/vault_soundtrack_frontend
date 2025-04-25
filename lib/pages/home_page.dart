@@ -51,31 +51,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   logout() async {
+    final userState = Provider.of<UserState>(context, listen: false);
     try {
-      final userState = Provider.of<UserState>(context, listen: false);
+      print('logging out, userState.isLoggingOut: ${userState.isLoggingOut}');
 
       if (userState.isLoggingOut) return; // prevent multiple logouts
-      print('Logging out...');
 
       // sets the logout flag to true - AuthPage listens and handles state changes
-      // to avoid calling setState on unmounted widget
       userState.startLogout();
 
       await FirebaseAuth.instance.signOut();
-
-      if (mounted) {
-        print('User logged out??');
-        // navigate to login page
-        Navigator.pushReplacementNamed(context, '/auth');
-      }
     } catch (e) {
       print('Error logging out: $e');
       if (mounted) {
         UIHelpers.showSnackBar(context, 'Error signing out', isError: true);
       }
-
-      // reset logout flag if error occurs
-      final userState = Provider.of<UserState>(context, listen: false);
+      userState.endLogout();
+    } finally {
+      // Reset the logout flag after the operation is complete
       userState.endLogout();
     }
   }
@@ -163,7 +156,7 @@ class _HomePageState extends State<HomePage> {
                             final sessionState = Provider.of<SessionState>(
                                 context,
                                 listen: false);
-                            sessionState.loadPastSessions();
+                            sessionState.loadSessions();
                           },
                         ),
                       ],
