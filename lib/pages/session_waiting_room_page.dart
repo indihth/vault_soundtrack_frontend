@@ -211,6 +211,19 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
                       },
                     ),
                   ),
+                ],
+              ),
+
+              Column(
+                children: [
+                  // Display button only to host
+                  if (sessionState.isHost)
+                    MyButton(
+                      text: "Lets go!",
+                      // onTap: displayUsersInSession,
+                      onTap: handleTap,
+                    ),
+                  SizedBox(height: 8),
 
                   // For users
                   if (!sessionState.isHost) ...[
@@ -229,15 +242,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
                   ],
                 ],
               ),
-
-              // Display button only to host
-              if (sessionState.isHost)
-                MyButton(
-                  text: "Lets go!",
-                  // onTap: displayUsersInSession,
-                  onTap: handleTap,
-                ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14)
             ],
           ),
         ),

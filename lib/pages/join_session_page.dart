@@ -149,69 +149,72 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
         child: Container(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('Join Session Page'),
+              Column(
+                children: [
+                  SizedBox(
+                    height: 300,
+                    child: MobileScanner(
+                      controller: cameraController,
+                      onDetect: (capture) {
+                        final List<Barcode> barcodes = capture.barcodes;
+
+                        // handle detected barcode
+                        if (barcodes.isNotEmpty) {
+                          cameraController?.stop();
+
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('QR Code Detected'),
+                              content:
+                                  Text('Would you like to join the session?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    print('Joining session...');
+
+                                    _processScanResult(barcodes);
+                                    Navigator.pop(context);
+                                    // Resume scanning if you paused it
+                                    // cameraController.start();
+                                  },
+                                  child: const Text('Join'),
+                                ),
+                                TextButton(
+                                    onPressed: () {
+                                      cameraController?.start();
+                                      Navigator.pop(context);
+                                      // Resume scanning if you paused it
+                                    },
+                                    child: const Text('Cancel'))
+                              ],
+                            ),
+                          );
+                        } else {
+                          print("Invalid QR code ##########################");
+                        }
+                        //   }
+                        // }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      scanResult ?? 'Scan a QR code',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+              // Display the scan result
               MyButton(
                 text: 'Join a session',
                 onTap: () => _handleTap(context),
               ), // wrap in anon function to pass context
-              Expanded(
-                flex: 3,
-                child: MobileScanner(
-                  controller: cameraController,
-                  onDetect: (capture) {
-                    final List<Barcode> barcodes = capture.barcodes;
-
-                    // handle detected barcode
-                    if (barcodes.isNotEmpty) {
-                      cameraController?.stop();
-
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('QR Code Detected'),
-                          content: Text('Would you like to join the session?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                print('Joining session...');
-
-                                _processScanResult(barcodes);
-                                Navigator.pop(context);
-                                // Resume scanning if you paused it
-                                // cameraController.start();
-                              },
-                              child: const Text('Join'),
-                            ),
-                            TextButton(
-                                onPressed: () {
-                                  cameraController?.start();
-                                  Navigator.pop(context);
-                                  // Resume scanning if you paused it
-                                },
-                                child: const Text('Cancel'))
-                          ],
-                        ),
-                      );
-                    } else {
-                      print("Invalid QR code ##########################");
-                    }
-                    //   }
-                    // }
-                  },
-                ),
-              ),
-              // Display the scan result
-              Expanded(
-                flex: 1,
-                child: Center(
-                  child: Text(
-                    scanResult ?? 'Scan a QR code',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
-              ),
+              // SizedBox(height: 16),
             ],
           ),
         ),
