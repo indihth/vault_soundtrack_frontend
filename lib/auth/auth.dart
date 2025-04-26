@@ -69,8 +69,18 @@ class _AuthPageState extends State<AuthPage> {
             print('No auth data - should show login page');
             return LoginOrRegister();
           } else {
-            print('Has auth data - showing home page');
-            return HomePage();
+            // check if user is new and needs to connect to Spotify
+
+            return Consumer<UserState>(
+              builder: (context, userState, _) {
+                // If this is a new registration, show the Spotify connect page
+                if (userState.isNewUser) {
+                  return ConnectSpotifyPage();
+                }
+                // Otherwise show the home page
+                return HomePage();
+              },
+            );
           }
 
           // If we haven't initialized user state yet or it's loading, show loading

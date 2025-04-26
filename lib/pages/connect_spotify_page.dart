@@ -32,10 +32,15 @@ class _ConnectSpotifyPageState extends State<ConnectSpotifyPage> {
         if (mounted) {
           final userState = Provider.of<UserState>(context, listen: false);
           userState.setSpotifyConnection(true);
+          userState.clearNewUserFlag(); // Set new user flag to false
         }
 
         // // Navigate to home after successful connection
         // Navigator.pushReplacementNamed(context, '/home');
+
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home', (route) => false // remove all previous routes
+            );
       }
     } catch (e) {
       print("Error in onAuthSuccess: $e");

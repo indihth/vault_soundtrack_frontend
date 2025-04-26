@@ -4,11 +4,13 @@ import 'package:vault_soundtrack_frontend/services/user_services.dart';
 
 class UserState extends ChangeNotifier {
   String _displayName = '';
-  bool _isNewUser = true; // Flag to check if user is new
-  bool _isSpotifyConnected = false;
-  bool _isLoggingOut = false; // Flag to check if user is logging out
+  String _spotifyDisplayName = '';
+  bool _isNewUser = false;
+  bool _isSpotifyConnected = true;
+  bool _isLoggingOut = false;
 
   String get displayName => _displayName;
+  String get spotifyDisplayName => _spotifyDisplayName;
   bool get isNewUser => _isNewUser;
   bool get isSpotifyConnected => _isSpotifyConnected;
   bool get isLoggingOut => _isLoggingOut;
@@ -25,6 +27,11 @@ class UserState extends ChangeNotifier {
 
   void setDisplayName(String name) {
     _displayName = name;
+    notifyListeners();
+  }
+
+  void setSpotifyDisplayName(String name) {
+    _spotifyDisplayName = name;
     notifyListeners();
   }
 
@@ -46,7 +53,7 @@ class UserState extends ChangeNotifier {
   void resetState() {
     _displayName = '';
     _isNewUser = false;
-    _isSpotifyConnected = false;
+    _isSpotifyConnected = true;
     _isLoggingOut = false;
     notifyListeners();
   }
