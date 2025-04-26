@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   // get current user id
   final userId = FirebaseAuth.instance.currentUser?.uid;
   late SessionState _sessionState;
+  late UserState userState; // Declare the user state variable
 
   String? sessionMessage; // message from the server API request
   Map<String, dynamic>? playlistResult; // message from the server API request
@@ -35,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     _sessionState = Provider.of<SessionState>(context, listen: false);
+    userState = Provider.of<UserState>(context, listen: false);
 
     // only load after widget is mounted
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -65,7 +67,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   logout() async {
-    final userState = Provider.of<UserState>(context, listen: false);
     try {
       print('Logout started');
 
@@ -78,11 +79,13 @@ class _HomePageState extends State<HomePage> {
       // clear states
       _sessionState.clearSessionState();
       _sessionState.clearViewingState();
+      userState.resetState();
 
       print('Firebase signOut completed');
 // force rebuild of the widget tree to update the UI
       if (mounted) {
-        setState(() {});
+        // setState(() {});
+        Navigator.pushReplacementNamed(context, '/auth');
       }
     } catch (e) {
       print('Error logging out: $e');
@@ -104,6 +107,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    userState = Provider.of<UserState>(context, listen: true);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // automatically hides added back btn
@@ -131,7 +135,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? 'User'}",
+                    "Hello, ${userState.displayName ?? 'User'}",
+                    // "Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? 'User'}",
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                   SizedBox(height: 48),
