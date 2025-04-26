@@ -25,6 +25,16 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isLoading = false; // loading indicator
 
+  late UserState _userState; // user state
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize UserState
+    _userState = Provider.of<UserState>(context, listen: false);
+  }
+
   // sign user in method
   void login() async {
     // show loading indicator
@@ -41,11 +51,12 @@ class _LoginPageState extends State<LoginPage> {
             email: emailController.text, password: passwordController.text);
 
         // Update UserState after successful login
-        // final user = FirebaseAuth.instance.currentUser;
-        // if (user != null) {
-        //   context.read<UserState>().setDisplayName(user.displayName ?? 'User');
-        //   await context.read<UserState>().updateUserState();
-        // }
+        final user = FirebaseAuth.instance.currentUser;
+
+        if (user != null) {
+          _userState.setDisplayName(user.displayName ?? 'User');
+          // await _userState.updateUserState();
+        }
 
         // hide loading indicator
         setState(() {
