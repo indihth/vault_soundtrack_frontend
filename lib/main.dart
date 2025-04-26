@@ -71,7 +71,6 @@ class MyApp extends StatelessWidget {
             '/user-sessions': (context) => const UserSessionsListPage(),
             '/connect-spotify': (context) => const ConnectSpotifyPage(),
             '/waiting-room': (context) => const SessionWaitingRoomPage(),
-            // '/manage-spotify': (context) => const ManageSpotifyPage(),
           }),
     );
   }
