@@ -97,7 +97,6 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                     obscureText: false,
                     controller: _descriptionController),
                 SizedBox(height: 16),
-                Text('Create Session Page'),
                 MyButton(
                   text: "Create session",
                   onTap: handleStartSession,
