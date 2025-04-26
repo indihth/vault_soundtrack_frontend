@@ -57,11 +57,15 @@ class _RegisterPageState extends State<RegisterPage> {
       // Set display name - working??
       await userCredential.user?.updateDisplayName(usernameController.text);
 
+      // Refresh the user to get the updated profile
+      await FirebaseAuth.instance.currentUser?.reload();
+
       // Update UserState
       _userState.setDisplayName(usernameController.text);
       _userState.setNewUserFlag();
 
-      print("User registered: ${userCredential.user?.uid}");
+      print(
+          "User registered: ${FirebaseAuth.instance.currentUser?.displayName}");
 
       // add user document to firestore
       await _userState.createUserDocument(usernameController.text);
