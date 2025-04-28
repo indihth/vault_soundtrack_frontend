@@ -170,7 +170,15 @@ class PlaylistHeader extends StatelessWidget {
               ),
             ]
           ],
-        )
+        ),
+        SizedBox(height: 8),
+        Text(
+            'Tracks with 2 or more down votes will not be added to the playlist.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey,
+                ),
+            textAlign: TextAlign.center),
+        SizedBox(height: 8),
       ],
     );
   }
