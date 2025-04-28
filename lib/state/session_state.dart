@@ -15,11 +15,10 @@ class SessionState extends ChangeNotifier {
   bool _isHost = false;
   bool _isActive = false;
   bool _isWaiting = false;
-
   bool _isJoining = false;
-  bool _isViewingMode = false;
 
   // Variables for viewing past sessions - these won't affect the active session
+  bool _isViewingMode = false;
   String _viewingSessionId = '';
   String _viewingPlaylistId = '';
   String _viewingSessionName = '';

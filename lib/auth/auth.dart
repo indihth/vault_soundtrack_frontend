@@ -15,45 +15,10 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  late UserState _userState;
-  bool _isInitialized = false; // Track initialization state
-  bool _isLoading = false; // Track loading state
-
   @override
   void initState() {
     super.initState();
-
-    // initialize UserState
-
-    // waits until the widget is fully built before calling _initializeUserState
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _initializeUserState();
-    // });
   }
-
-  // user state must be handled after widget is mounted to avoid calling setState on unmounted widget
-  Future<void> _initializeUserState() async {
-    _userState = Provider.of<UserState>(context, listen: true);
-
-    await _userState.updateUserState();
-    if (mounted) {
-      setState(() {
-        _isInitialized = true;
-        _isLoading = false; // Set loading to false after initialization
-      });
-    }
-  }
-
-  // Future<void> _handleSpotifyConnectionSuccess() async {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     _userState.clearNewUserFlag();
-  //     // Navigate to home after successful connection
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => HomePage()),
-  //     );
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +34,7 @@ class _AuthPageState extends State<AuthPage> {
             print('No auth data - should show login page');
             return LoginOrRegister();
           } else {
-            // check if user is new and needs to connect to Spotify
+            // Check if user is new and needs to connect to Spotify
 
             return Consumer<UserState>(
               builder: (context, userState, _) {
