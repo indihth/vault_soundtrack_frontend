@@ -73,36 +73,42 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
       create: (context) => SessionImageServices(),
       child: Scaffold(
         appBar: AppBar(),
-        body: Center(
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Create Session',
-                    style: Theme.of(context).textTheme.titleLarge),
-                SizedBox(height: 24),
+        body: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Create Session',
+                        style: Theme.of(context).textTheme.titleLarge),
+                    SizedBox(height: 24),
 
-                // pick image text
-                // Text('Pick an image for your session',
-                //     style: Theme.of(context).textTheme.titleLarge),
-                // ImageUploadBtn(),
-                MyTextField(
-                    hintText: "Playlist title",
-                    obscureText: false,
-                    controller: _titleController),
-                SizedBox(height: 16),
-                MyTextField(
-                    hintText: "Dscription",
-                    obscureText: false,
-                    controller: _descriptionController),
-                SizedBox(height: 16),
-                MyButton(
-                  text: "Create session",
-                  onTap: handleStartSession,
+                    // pick image text
+                    // Text('Pick an image for your session',
+                    //     style: Theme.of(context).textTheme.titleLarge),
+                    // ImageUploadBtn(),
+                    MyTextField(
+                        hintText: "Playlist title",
+                        obscureText: false,
+                        controller: _titleController),
+                    SizedBox(height: 16),
+                    MyTextField(
+                        hintText: "Dscription",
+                        obscureText: false,
+                        controller: _descriptionController),
+                    SizedBox(height: 16),
+                    MyButton(
+                      text: "Create session",
+                      onTap: handleStartSession,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Expanded(flex: 1, child: Container()),
+            ],
           ),
         ),
       ),
