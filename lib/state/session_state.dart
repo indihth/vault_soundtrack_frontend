@@ -50,16 +50,6 @@ class SessionState extends ChangeNotifier {
   String get viewingHostDisplayName => _viewingHostDisplayName;
   String get viewingImageUrl => _viewingImageUrl;
 
-  // // Getters - dynamically returns viewingMode or active session data
-  // String get sessionId => _isViewingMode ? _viewingSessionId : _sessionId;
-  // String get playlistId => _isViewingMode ? _viewingPlaylistId : _playlistId;
-  // String get sessionName => _isViewingMode ? _viewingSessionName : _sessionName;
-  // String get sessionDescription =>
-  //     _isViewingMode ? _viewingSessionDescription : _sessionDescription;
-  // String get hostDisplayName =>
-  //     _isViewingMode ? _viewingHostDisplayName : _hostDisplayName;
-  // String get imageUrl => _isViewingMode ? _viewingImageUrl : '';
-
   bool get isHost => _isHost;
   bool get isActive => _isActive;
   bool get isWaiting => _isWaiting;
@@ -92,7 +82,6 @@ class SessionState extends ChangeNotifier {
 
         _parseSessionUsers(session);
 
-        print('##################### viewing ImageURL: $_viewingImageUrl');
         // Set viewing mode to true
         setViewingMode(true);
       } else {
@@ -172,9 +161,6 @@ class SessionState extends ChangeNotifier {
       _pastSessions = userSessions.where((session) {
         return session['status'] == 'ended';
       }).toList();
-
-      // print('active sessions: $activeSessions');
-      print('past sessions: $_pastSessions');
     } catch (e) {
       print('Error loading sessions: $e');
     } finally {
@@ -274,7 +260,6 @@ class SessionState extends ChangeNotifier {
           };
         }
       }).toList();
-      print('########################## session users: $_sessionUsers');
       notifyListeners();
     } catch (e) {
       print('Error parsing session users: $e');

@@ -69,7 +69,6 @@ class PlaylistSessionServices {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       // const sessionId = ApiConstants.sessionId;
-      print('############################ sessionId: $sessionId');
 
       final response = await http.get(
         Uri.parse(
@@ -177,6 +176,7 @@ class PlaylistSessionServices {
           'Authorization': 'Bearer $userToken',
         },
       );
+      print('####################### Response: ${response.body}');
 
       return response.statusCode == 200; // Return true if successful
     } catch (e) {

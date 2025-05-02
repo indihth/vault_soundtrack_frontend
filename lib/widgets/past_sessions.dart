@@ -15,7 +15,6 @@ class PastSessions extends StatelessWidget {
       final sessionState = Provider.of<SessionState>(context, listen: false);
       await sessionState.viewPastSession(session['id'], session,
           isViewing: true);
-      print('session image: ${session['topTrackImageUrl']}');
 
       // Navigate to live session
       if (context.mounted) {
