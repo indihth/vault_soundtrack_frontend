@@ -67,8 +67,6 @@ class MyApp extends StatelessWidget {
                   sessionId: 'undefined',
                 ),
             '/live-session': (context) => const LiveSessionPage(),
-            '/session-list': (context) => const SessionListPage(),
-            '/user-sessions': (context) => const UserSessionsListPage(),
             '/connect-spotify': (context) => const ConnectSpotifyPage(),
             '/waiting-room': (context) => const SessionWaitingRoomPage(),
           }),
