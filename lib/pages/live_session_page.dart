@@ -247,18 +247,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
         // let user navigate back to homepage - adjust stack after joining
         // automaticallyImplyLeading: false, // automatically hides added back btn
         actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.arrow_back),
-          //   onPressed: () {
-          //     if (isViewingMode) {
-          //       // Clear only viewing state when exiting viewing mode
-          //       _sessionState.clearViewingState();
-          //       Navigator.pop(context);
-          //     } else {
-          //       Navigator.pushReplacementNamed(context, '/home');
-          //     }
-          //   },
-          // ),
           if (!isViewingMode) // don't show QR code in viewing mode
             IconButton(
               icon: const Icon(Icons.qr_code),
@@ -355,6 +343,19 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                       },
                     ),
                   ),
+                  if (!isViewingMode) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 14.0),
+                      child: Text(
+                          'Tracks with 2 or more down votes will not be added \nto the playlist.',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey,
+                                  ),
+                          textAlign: TextAlign.center),
+                    ),
+                    SizedBox(height: 8),
+                  ]
                 ],
               ),
             );
