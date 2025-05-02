@@ -35,6 +35,9 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
 
   @override
   Widget build(BuildContext context) {
+    // faded out text if track has 2 or more down votes
+    final isFaded = widget.item.downVotes >= 2;
+
     return Card(
       elevation: 0, // removes shadow
       child: Padding(
@@ -46,21 +49,28 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
             ClipRRect(
               borderRadius:
                   BorderRadius.circular(2.0), // Rounded corners for the image
-              child: Image.network(
-                widget.item.albumArtworkUrl,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                // Handle image loading errors gracefully
-                errorBuilder: (context, error, stackTrace) {
-                  // If image loading fails, show a placeholder
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.music_note, color: Colors.grey),
-                  );
-                },
+              child: ColorFiltered(
+                // Dynamically fades the image if isFaded is true
+                colorFilter: isFaded
+                    ? const ColorFilter.mode(Colors.black, BlendMode.saturation)
+                    : const ColorFilter.mode(
+                        Colors.transparent, BlendMode.multiply),
+                child: Image.network(
+                  widget.item.albumArtworkUrl,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  // Handle image loading errors gracefully
+                  errorBuilder: (context, error, stackTrace) {
+                    // If image loading fails, show a placeholder
+                    return Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.music_note, color: Colors.grey),
+                    );
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 16.0), // Spacing between image and text
@@ -72,7 +82,11 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
                   // Song name with ellipsis if too long
                   Text(
                     widget.item.songName,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: isFaded
+                              ? Colors.grey[700]
+                              : Theme.of(context).colorScheme.primary,
+                        ),
                     // style: const TextStyle(
                     //   fontWeight: FontWeight.bold,
                     //   fontSize: 16.0,
@@ -86,7 +100,7 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
                   Text(
                     widget.item.artistName,
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: isFaded ? Colors.grey[700] : Colors.grey[500],
                       fontSize: 14.0,
                     ),
                     maxLines: 1,
@@ -97,7 +111,7 @@ class _TrackCardState extends State<TrackCard> with VotingMixin {
                   Text(
                     widget.item.albumName,
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: isFaded ? Colors.grey[700] : Colors.grey[500],
                       fontSize: 14.0,
                     ),
                     maxLines: 1,
