@@ -5,6 +5,7 @@ import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 import 'package:vault_soundtrack_frontend/widgets/my_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:vault_soundtrack_frontend/widgets/vote_icon.dart';
 
 class SessionWaitingRoomPage extends StatefulWidget {
   const SessionWaitingRoomPage({super.key});
@@ -14,6 +15,49 @@ class SessionWaitingRoomPage extends StatefulWidget {
 }
 
 class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
+// Voting demo state variables
+  bool _demoIsUpVoted = false;
+  bool _demoIsDownVoted = false;
+  int _demoUpVoteCount = 0;
+  int _demoDownVoteCount = 0;
+
+// Voting demo logic
+  void _handleDemoVote(String voteType) {
+    setState(() {
+      if (voteType == 'up') {
+        // Toggle upvote
+        if (_demoIsUpVoted) {
+          _demoIsUpVoted = false;
+          _demoUpVoteCount--;
+        } else {
+          _demoIsUpVoted = true;
+          _demoUpVoteCount++;
+
+          // Remove downvote if exists
+          if (_demoIsDownVoted) {
+            _demoIsDownVoted = false;
+            _demoDownVoteCount--;
+          }
+        }
+      } else {
+        // Toggle downvote
+        if (_demoIsDownVoted) {
+          _demoIsDownVoted = false;
+          _demoDownVoteCount--;
+        } else {
+          _demoIsDownVoted = true;
+          _demoDownVoteCount++;
+
+          // Remove upvote if exists
+          if (_demoIsUpVoted) {
+            _demoIsUpVoted = false;
+            _demoUpVoteCount--;
+          }
+        }
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -106,148 +150,172 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
 
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // QR code section and title
-              Column(
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        sessionState.sessionName,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        sessionState.sessionDescription,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Theme.of(context).colorScheme.secondary),
-                      ),
-                    ],
-                  ),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // QR code section and title
+                Column(
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          sessionState.sessionName,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        // Text(
+                        //   sessionState.sessionDescription,
+                        //   textAlign: TextAlign.center,
+                        //   style:
+                        //       Theme.of(context).textTheme.titleMedium?.copyWith(
+                        //             color: Colors.grey,
+                        //           ),
+                        // ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
-                  // QR code
-                  Column(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: QrImageView(
-                          data: sessionState.sessionId,
-                          // 'sample://open.my.app/#/join-session/${sessionState.sessionId}',
-                          version: QrVersions.auto,
-                          size: 200.0,
-                          backgroundColor: Colors.white,
-                          padding: EdgeInsets.all(10),
-                          errorStateBuilder: (cxt, err) {
-                            return Center(
-                              child: Text(
-                                "Uh oh! Something went wrong...",
-                                textAlign: TextAlign.center,
-                              ),
+                    // QR code
+                    Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: QrImageView(
+                            data: sessionState.sessionId,
+                            // 'sample://open.my.app/#/join-session/${sessionState.sessionId}',
+                            version: QrVersions.auto,
+                            size: 200.0,
+                            backgroundColor: Colors.white,
+                            padding: EdgeInsets.all(10),
+                            errorStateBuilder: (cxt, err) {
+                              return Center(
+                                child: Text(
+                                  "Uh oh! Something went wrong...",
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Joined users
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Text(
+                        //   'Users joined: ',
+                        //   style: Theme.of(context).textTheme.bodyLarge,
+                        // ),
+                        const SizedBox(height: 6),
+
+                        // Display list of users in session
+                        Consumer<SessionState>(
+                          builder: (context, sessionState, _) {
+                            if (sessionState.sessionUsers.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  '...',
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            }
+
+                            // Join user names with commas
+                            final userNames = sessionState.sessionUsers
+                                .map((user) =>
+                                    user['displayName'] ?? 'Unknown User')
+                                .join(' | ');
+
+                            return Text(
+                              userNames,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.grey,
+                                  ),
+                              softWrap: true,
                             );
                           },
                         ),
-                      ),
-                      // display session name and description
-                      const SizedBox(height: 6),
-                      Text(
-                        "Scan QR code to join",
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              // Center text section
-              Column(
-                children: [
-                  Text(
-                    'Users joined: ',
-                    style: TextStyle(
-                        fontSize: 24,
-                        color: Theme.of(context).colorScheme.primary),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Display list of users in session
-                  Consumer<SessionState>(
-                    builder: (context, sessionState, _) {
-                      if (sessionState.sessionUsers.isEmpty) {
-                        return Center(
-                          child: Text(
-                            '...',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      }
-
-                      // Join user names with commas
-                      final userNames = sessionState.sessionUsers
-                          .map((user) => user['displayName'] ?? 'Unknown User')
-                          .join(' | ');
-
-                      return Text(
-                        userNames,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey,
-                            ),
-                        softWrap: true,
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14.0),
-                child: Text(
-                    'Tracks with 2 or more down votes will not be added \nto the playlist.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                    textAlign: TextAlign.center),
-              ),
-              // Button section
-              Column(
-                children: [
-                  // Display button only to host
-                  if (sessionState.isHost)
-                    MyButton(
-                      text: "Lets go!",
-                      // onTap: displayUsersInSession,
-                      onTap: handleTap,
-                    ),
-                  SizedBox(height: 8),
-
-                  // For users
-                  if (!sessionState.isHost) ...[
-                    Text(
-                      'The host will start the session \nwhen everyone is ready',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-
-                    // For host
-                  ] else ...[
-                    Text(
-                      "Continue when all users have joined",
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      ],
                     ),
                   ],
-                ],
-              ),
-              SizedBox(height: 14)
-            ],
+                ),
+
+                // Display instructions for host and users
+                Column(
+                  children: [
+                    Text(
+                      'You can vote on tracks, try it out!',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Tracks with 2 or more down votes will not \nbe added to the playlist.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 24),
+
+                    // A demo version of the voting feature that allows user to vote
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        VoteIcon(
+                          isUpVote: true,
+                          isVoted: _demoIsUpVoted,
+                          isLoading: false,
+                          voteCount: _demoUpVoteCount,
+                          onTap: () => _handleDemoVote('up'),
+                        ),
+                        const SizedBox(width: 20),
+                        VoteIcon(
+                          isUpVote: false,
+                          isVoted: _demoIsDownVoted,
+                          isLoading: false,
+                          voteCount: _demoDownVoteCount,
+                          onTap: () => _handleDemoVote('down'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                // Button section
+                Column(
+                  children: [
+                    // Display button only to host
+                    if (sessionState.isHost)
+                      MyButton(
+                        text: "Start session",
+                        // onTap: displayUsersInSession,
+                        onTap: handleTap,
+                        fullWidth: true,
+                      ),
+
+                    // For users
+                    if (!sessionState.isHost)
+                      Text(
+                        'The host will start the session \nwhen everyone is ready',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
