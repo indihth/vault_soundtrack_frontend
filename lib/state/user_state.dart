@@ -82,7 +82,7 @@ class UserState extends ChangeNotifier {
 
   Future<void> createUserDocument(String username) async {
     try {
-      final userData = await UserServices.creatUserDocument(username);
+      final userData = await UserServices.createUserDocument(username);
       setDisplayName(userData['username'] ?? username);
       setSpotifyConnection(false);
     } catch (e) {

@@ -57,7 +57,8 @@ class UserServices {
     }
   }
 
-  static Future<Map<String, dynamic>> creatUserDocument(String username) async {
+  static Future<Map<String, dynamic>> createUserDocument(
+      String username) async {
     try {
       final userToken = await FirebaseAuth.instance.currentUser?.getIdToken();
       print('userToken: $userToken');
