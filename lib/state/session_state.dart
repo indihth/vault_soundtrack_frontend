@@ -134,7 +134,6 @@ class SessionState extends ChangeNotifier {
     }
 
     _isLoading = true;
-    notifyListeners();
 
     try {
       var userSessions = await UserServices.getUserSessions();
