@@ -15,6 +15,8 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -22,6 +24,11 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    // loading indicator
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       // listens to auth state - if user is logged in or not
       body: StreamBuilder(
@@ -36,16 +43,24 @@ class _AuthPageState extends State<AuthPage> {
           } else {
             // Check if user is new and needs to connect to Spotify
 
-            return Consumer<UserState>(
-              builder: (context, userState, _) {
-                // If this is a new registration, show the Spotify connect page
-                if (userState.isNewUser) {
-                  return ConnectSpotifyPage();
-                }
-                // Otherwise show the home page
-                return HomePage();
-              },
-            );
+            return Consumer<UserState>(builder: (context, userState, _) {
+              // Handle null case for isNewUser
+              // if (userState.isNewUser == null) {
+              //   print('userState should be null: ${userState.isNewUser}');
+              //   return const Center(child: CircularProgressIndicator());
+              // }
+
+              // If this is a new registration, show the Spotify connect page
+              if (userState.isNewUser) {
+                print('userState should be true: ${userState.isNewUser}');
+                return ConnectSpotifyPage();
+              }
+
+              print('userState should be false: ${userState.isNewUser}');
+              return HomePage();
+
+              // Otherwise show the home page
+            });
           }
 
           // If we haven't initialized user state yet or it's loading, show loading
