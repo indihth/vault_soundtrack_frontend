@@ -147,14 +147,20 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
       appBar: AppBar(),
       body: Center(
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  Text(
+                    'Join a Session',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  SizedBox(height: 60),
                   SizedBox(
-                    height: 300,
+                    height: 400,
                     child: MobileScanner(
                       controller: cameraController,
                       onDetect: (capture) {
@@ -173,6 +179,15 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
                               actions: [
                                 TextButton(
                                   onPressed: () {
+                                    cameraController?.start();
+                                    Navigator.pop(context);
+                                    // Resume scanning if you paused it
+                                  },
+                                  child: const Text('Cancel',
+                                      style: TextStyle(color: Colors.grey)),
+                                ),
+                                TextButton(
+                                  onPressed: () {
                                     print('Joining session...');
 
                                     _processScanResult(barcodes);
@@ -182,13 +197,6 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
                                   },
                                   child: const Text('Join'),
                                 ),
-                                TextButton(
-                                    onPressed: () {
-                                      cameraController?.start();
-                                      Navigator.pop(context);
-                                      // Resume scanning if you paused it
-                                    },
-                                    child: const Text('Cancel'))
                               ],
                             ),
                           );
@@ -204,17 +212,11 @@ class _JoinSessionPageState extends State<JoinSessionPage> {
                   Center(
                     child: Text(
                       scanResult ?? 'Scan a QR code',
-                      style: const TextStyle(fontSize: 18),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                 ],
               ),
-              // Display the scan result
-              MyButton(
-                text: 'Join a session',
-                onTap: () => _handleTap(context),
-              ), // wrap in anon function to pass context
-              // SizedBox(height: 16),
             ],
           ),
         ),
