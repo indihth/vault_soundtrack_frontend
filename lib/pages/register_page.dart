@@ -71,7 +71,8 @@ class _RegisterPageState extends State<RegisterPage> {
       // add user document to firestore
       await _userState.createUserDocument(usernameController.text);
 
-      print("User document created");
+      print(
+          "######################## - register - is new user: ${_userState.isNewUser}");
     } on FirebaseAuthException catch (e) {
       displayMessageToUser(context, e.code); // display error message to user
     } finally {
@@ -131,6 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   MyTextField(
                     controller: emailController,
                     hintText: 'Email',
+                    textInputType: TextInputType.emailAddress,
                     obscureText: false,
                   ),
 
@@ -149,23 +151,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   MyTextField(
                     controller: confirmPwController,
                     hintText: 'Confirm password',
+                    textInputAction: TextInputAction.done,
                     obscureText: true,
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // forgot password?
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Forgot Password?',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
                   ),
 
                   const SizedBox(height: 25),
