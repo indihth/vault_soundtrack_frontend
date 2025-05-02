@@ -99,45 +99,45 @@ class PlaylistHeader extends StatelessWidget {
                     Text(item.title,
                         softWrap: true,
                         style: Theme.of(context).textTheme.titleLarge),
-                    // Text(
-                    //   item.description,
-                    //   softWrap: true,
-                    //   style: const TextStyle(
-                    //     color: Colors.grey,
-                    //     fontSize: 14.0,
-                    //   ),
-                    // ),
                     const SizedBox(height: 8),
-                    Consumer<SessionState>(
-                      builder: (context, sessionState, _) {
-                        if (sessionState.sessionUsers.isEmpty) {
-                          return Text(
-                            'Waiting for users to join...',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey,
-                                    ),
-                          );
-                        }
-
-                        // Join user names with commas
-                        final userNames = sessionState.sessionUsers
-                            .map(
-                                (user) => user['displayName'] ?? 'Unknown User')
-                            .join(' | ');
-
-                        return Text(
-                          userNames,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Colors.grey,
-                                  ),
-                          softWrap: true,
-                        );
-                      },
+                    Text(
+                      item.description,
+                      softWrap: true,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14.0,
+                      ),
                     ),
                   ],
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Consumer<SessionState>(
+                builder: (context, sessionState, _) {
+                  if (sessionState.sessionUsers.isEmpty) {
+                    return Text(
+                      'Waiting for users to join...',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey,
+                          ),
+                    );
+                  }
+
+                  // Join user names with commas
+                  final userNames = sessionState.sessionUsers
+                      .map((user) => user['displayName'] ?? 'Unknown User')
+                      .join(' | ');
+
+                  return Text(
+                    userNames,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey,
+                        ),
+                    softWrap: true,
+                  );
+                },
               ),
             ),
           ],
@@ -172,13 +172,17 @@ class PlaylistHeader extends StatelessWidget {
           ],
         ),
         SizedBox(height: 8),
-        Text(
-            'Tracks with 2 or more down votes will not be added to the playlist.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey,
-                ),
-            textAlign: TextAlign.center),
-        SizedBox(height: 8),
+
+        // only displayed if in live session
+        // if (!isViewingMode) ...[
+        //   Text(
+        //       'Tracks with 2 or more down votes will not be added \nto the playlist.',
+        //       style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        //             color: Colors.grey,
+        //           ),
+        //       textAlign: TextAlign.center),
+        //   SizedBox(height: 8),
+        // ]
       ],
     );
   }
