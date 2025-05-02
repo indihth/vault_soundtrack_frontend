@@ -65,28 +65,48 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
   /// Handles common behavior when a session is ending or has ended
   /// for both host and guest users
   void handleSessionEnded() {
-    // Stop listening to session status
-    _sessionState.stopListeningToSessionStatus();
+    try {
+// set _isEnding to true to show loading spinner
+      setState(() {
+        _isEnding = true;
+      });
+      // Stop listening to session status
+      _sessionState.stopListeningToSessionStatus();
 
-    // fetch updated user sessions and store in session state - update for dashboard UI
-    _sessionState.refreshSessions();
+      // fetch updated user sessions and store in session state - update for dashboard UI
+      _sessionState.refreshSessions();
 
-    // Navigate away after widget is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        navigateAndClearState();
-      }
-    });
+      // Add delay to display loading spinner for a bit longer before navigating
+      Future.delayed(
+        const Duration(seconds: 2),
+        () {
+          if (mounted) {
+            navigateAndClearState();
+          }
+        },
+      );
+    } catch (e) {
+      // Reset _isEnding to false after navigation
+      setState(() {
+        _isEnding = false;
+      });
+      // Handle any errors that occur during session ending
+      UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
+      throw Exception('Error handling session ended: $e');
+    }
   }
 
   Future<void> handleSavePlaylist() async {
     try {
+      // dynamically set sessionId with viewing mode
+      final sessionId = widget.viewingMode
+          ? _sessionState.viewingSessionId
+          : _sessionState.sessionId;
       // Get session id from the Provider
-      if (_sessionState.sessionId.isEmpty) {
+      if (sessionId.isEmpty) {
         throw Exception('Session ID state is empty');
       }
-      final success =
-          await PlaylistSessionServices.savePlaylist(_sessionState.sessionId);
+      final success = await PlaylistSessionServices.savePlaylist(sessionId);
       if (success) {
         // TODO: Update 'save' button to show 'saved'
 
@@ -106,10 +126,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
 
   Future<void> navigateAndClearState() async {
     try {
-      // set _isEnding to true to show loading spinner
-      setState(() {
-        _isEnding = true;
-      });
       // navigate first
       await Navigator.pushReplacementNamed(context, '/home');
       print('Navigated to home page');
@@ -120,11 +136,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
       // Handle any errors that occur during navigation
       UIHelpers.showSnackBar(context, 'Error: ${e.toString()}', isError: true);
       throw Exception('Error navigating to home: $e');
-    } finally {
-      // Reset _isEnding to false after navigation
-      setState(() {
-        _isEnding = false;
-      });
     }
   }
 
