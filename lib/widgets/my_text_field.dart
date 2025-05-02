@@ -23,8 +23,6 @@ class MyTextField extends StatelessWidget {
       keyboardType: textInputType,
       textInputAction: textInputAction,
       obscureText: obscureText,
-      // TODO: add keyboard type parameter
-      // keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         // focusColor: Theme.of(context).colorScheme.inversePrimary,
         hintText: hintText,
