@@ -108,6 +108,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     userState = Provider.of<UserState>(context, listen: true);
+    print("######################## is new user: ${userState.isNewUser}");
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // automatically hides added back btn
@@ -135,7 +137,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Hello, ${userState.displayName ?? 'User'}",
+                    "Welcome",
+                    // "Hello, ${userState.displayName ?? 'User'}",
                     // "Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? 'User'}",
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
