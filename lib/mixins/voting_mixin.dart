@@ -6,6 +6,7 @@ import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/utils/ui_helpers.dart';
 
 mixin VotingMixin<T extends StatefulWidget> on State<T> {
+  // T is generic type of the widget
   bool _isVoteInProgress = false; // Debounce variable to prevent multiple votes
 
   bool isUpVoted = false;
