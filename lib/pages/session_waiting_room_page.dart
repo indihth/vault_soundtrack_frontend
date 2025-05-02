@@ -79,6 +79,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
     if (sessionState.isActive && !sessionState.isHost) {
       // Use addPostFrameCallback to ensure the navigation happens after the build is complete
       // Otherwise potential error trying to navigate while the widget is still building
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/live-session');
       });
@@ -149,7 +150,21 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
     final sessionState = Provider.of<SessionState>(context, listen: false);
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (sessionState.isViewingMode) {
+              setState(() {
+                sessionState.setViewingMode(false);
+              });
+            }
+            // Go back to the previous screen
+            Navigator.popAndPushNamed(
+                context, '/auth'); // Go back to the previous screen
+          },
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: Container(
