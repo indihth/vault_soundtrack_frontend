@@ -113,6 +113,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // QR code section and title
               Column(
                 children: [
                   Column(
@@ -133,7 +134,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
 
                   const SizedBox(height: 40),
 
-                  // QR code section
+                  // QR code
                   Column(
                     children: [
                       ClipRRect(
@@ -170,7 +171,7 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
               Column(
                 children: [
                   Text(
-                    'Users joining...',
+                    'Users joined: ',
                     style: TextStyle(
                         fontSize: 24,
                         color: Theme.of(context).colorScheme.primary),
@@ -178,42 +179,45 @@ class _SessionWaitingRoomPageState extends State<SessionWaitingRoomPage> {
                   const SizedBox(height: 6),
 
                   // Display list of users in session
-                  SizedBox(
-                    height: 100,
-                    child: Consumer<SessionState>(
-                      builder: (context, sessionState, _) {
-                        if (sessionState.sessionUsers.isEmpty) {
-                          return Center(
-                            child: Text(
-                              'Waiting for users to join...',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
-                          itemCount: sessionState.sessionUsers.length,
-                          itemBuilder: (context, index) {
-                            final user = sessionState.sessionUsers[index];
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 4.0),
-                              child: Text(
-                                // Access the displayName property of the user map
-                                user['displayName'] ?? 'Unknown User',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                textAlign: TextAlign.center,
-                              ),
-                            );
-                          },
+                  Consumer<SessionState>(
+                    builder: (context, sessionState, _) {
+                      if (sessionState.sessionUsers.isEmpty) {
+                        return Center(
+                          child: Text(
+                            '...',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
                         );
-                      },
-                    ),
+                      }
+
+                      // Join user names with commas
+                      final userNames = sessionState.sessionUsers
+                          .map((user) => user['displayName'] ?? 'Unknown User')
+                          .join(' | ');
+
+                      return Text(
+                        userNames,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Colors.grey,
+                            ),
+                        softWrap: true,
+                      );
+                    },
                   ),
                 ],
               ),
 
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14.0),
+                child: Text(
+                    'Tracks with 2 or more down votes will not be added \nto the playlist.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                        ),
+                    textAlign: TextAlign.center),
+              ),
+              // Button section
               Column(
                 children: [
                   // Display button only to host
