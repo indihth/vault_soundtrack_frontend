@@ -343,19 +343,6 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
                       },
                     ),
                   ),
-                  if (!isViewingMode) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14.0),
-                      child: Text(
-                          'Tracks with 2 or more down votes will not be added \nto the playlist.',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey,
-                                  ),
-                          textAlign: TextAlign.center),
-                    ),
-                    SizedBox(height: 8),
-                  ]
                 ],
               ),
             );
