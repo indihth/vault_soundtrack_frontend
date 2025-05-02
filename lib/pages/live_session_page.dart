@@ -231,123 +231,124 @@ class _LiveSessionPageState extends State<LiveSessionPage> {
             child: Text('No playlist ID found')),
       );
     }
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              if (isViewingMode) {
-                // clear only viewing state when exiting viewing mode
-                _sessionState.clearViewingState();
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacementNamed(context, '/home');
-              }
-            },
-            icon: const Icon(Icons.arrow_back)),
-        // let user navigate back to homepage - adjust stack after joining
-        // automaticallyImplyLeading: false, // automatically hides added back btn
-        actions: [
-          if (!isViewingMode) // don't show QR code in viewing mode
-            IconButton(
-              icon: const Icon(Icons.qr_code),
+
+    // Wrapping in PopScope to clear viewing state when navigating back via gesture or button
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) => {
+        if (isViewingMode) {_sessionState.clearViewingState()}
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
               onPressed: () {
-                // Get session ID from provider
-                final sessionId = _sessionState.sessionId;
-                final qrCodeText = '$sessionId, late';
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text(
-                      'Scan to join',
-                      textAlign: TextAlign.center,
-                    ),
-                    content: SizedBox(
-                      width: 180,
-                      height: 200,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          QrImageView(
-                            data: qrCodeText,
-                            // version: QrVersions.auto,
-                            backgroundColor: Colors.white,
-                            // padding: EdgeInsets.all(10),
-                            size: 170.0,
-                          ),
-                        ],
+                Navigator.pushReplacementNamed(context, '/home');
+              },
+              icon: const Icon(Icons.arrow_back)),
+          // let user navigate back to homepage - adjust stack after joining
+          // automaticallyImplyLeading: false, // automatically hides added back btn
+          actions: [
+            if (!isViewingMode) // don't show QR code in viewing mode
+              IconButton(
+                icon: const Icon(Icons.qr_code),
+                onPressed: () {
+                  // Get session ID from provider
+                  final sessionId = _sessionState.sessionId;
+                  final qrCodeText = '$sessionId, late';
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text(
+                        'Scan to join',
+                        textAlign: TextAlign.center,
+                      ),
+                      content: SizedBox(
+                        width: 180,
+                        height: 200,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            QrImageView(
+                              data: qrCodeText,
+                              // version: QrVersions.auto,
+                              backgroundColor: Colors.white,
+                              // padding: EdgeInsets.all(10),
+                              size: 170.0,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
-      body: StreamBuilder<Playlist>(
-        // uses either a Future or a Stream depending on viewing mode - view only fetches once, no updates
-        stream: isViewingMode
-            ? Stream.fromFuture(_getPlaylistOnce(playlistId))
-            : _getPlaylistStream(playlistId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // loading spinner while data is being fetched
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            // show error message if data fetching failed
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: TextStyle(color: Colors.red),
+                  );
+                },
               ),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.tracks.isEmpty) {
-            // show message when no history data exists
-            return const Center(
-              child: Text('No listening history found'),
-            );
-          } else {
-            Playlist playlist = snapshot.data!;
+          ],
+        ),
+        body: StreamBuilder<Playlist>(
+          // uses either a Future or a Stream depending on viewing mode - view only fetches once, no updates
+          stream: isViewingMode
+              ? Stream.fromFuture(_getPlaylistOnce(playlistId))
+              : _getPlaylistStream(playlistId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // loading spinner while data is being fetched
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              // show error message if data fetching failed
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.tracks.isEmpty) {
+              // show message when no history data exists
+              return const Center(
+                child: Text('No listening history found'),
+              );
+            } else {
+              Playlist playlist = snapshot.data!;
 
-            // create a sorted copy of the tracks list
-            List<Track> sortedTracks = sortTracks(playlist.tracks);
+              // create a sorted copy of the tracks list
+              List<Track> sortedTracks = sortTracks(playlist.tracks);
 
-            // builds a scrollable list of history items
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  PlaylistHeader(
-                    item: playlist,
-                    isHost: isViewingMode ? false : isHost,
-                    handleEndSession: handleEndSession,
-                    handleSavePlaylist: handleSavePlaylist,
-                    isViewingMode: isViewingMode,
-                    imageUrl: imageUrl,
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: sortedTracks.length,
-                      itemBuilder: (context, index) {
-                        Track track = sortedTracks[index];
-                        return TrackCard(
-                          // use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
-                          key: ObjectKey(track.trackId),
-                          item: track,
-                          isViewingMode:
-                              isViewingMode, // show/hide voting buttons
-                        );
-                      },
+              // builds a scrollable list of history items
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    PlaylistHeader(
+                      item: playlist,
+                      isHost: isViewingMode ? false : isHost,
+                      handleEndSession: handleEndSession,
+                      handleSavePlaylist: handleSavePlaylist,
+                      isViewingMode: isViewingMode,
+                      imageUrl: imageUrl,
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-        },
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: sortedTracks.length,
+                        itemBuilder: (context, index) {
+                          Track track = sortedTracks[index];
+                          return TrackCard(
+                            // use ObjectKey to uniquely identify each track - solves UI issue when reordering tracks
+                            key: ObjectKey(track.trackId),
+                            item: track,
+                            isViewingMode:
+                                isViewingMode, // show/hide voting buttons
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }
