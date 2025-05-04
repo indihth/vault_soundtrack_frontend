@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/login_or_register.dart';
 import 'package:vault_soundtrack_frontend/pages/connect_spotify_page.dart';
 import 'package:vault_soundtrack_frontend/pages/home_page.dart';
-import 'package:vault_soundtrack_frontend/services/user_services.dart';
 import 'package:vault_soundtrack_frontend/state/user_state.dart';
 
 class AuthPage extends StatefulWidget {

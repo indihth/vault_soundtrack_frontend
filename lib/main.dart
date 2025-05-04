@@ -1,11 +1,8 @@
-import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vault_soundtrack_frontend/auth/auth.dart';
 import 'package:vault_soundtrack_frontend/pages/home_page.dart';
-import 'package:vault_soundtrack_frontend/pages/session_list_page.dart';
-import 'package:vault_soundtrack_frontend/pages/user_sessions_list_page.dart';
 import 'package:vault_soundtrack_frontend/services/session_image_services.dart';
 import 'package:vault_soundtrack_frontend/state/session_state.dart';
 import 'package:vault_soundtrack_frontend/firebase_options.dart';
