@@ -128,14 +128,18 @@ class PlaylistHeader extends StatelessWidget {
                   // Join user names with commas
                   final userNames = sessionState.sessionUsers
                       .map((user) => user['displayName'] ?? 'Unknown User')
-                      .join(' | ');
+                      .join('\n');
 
-                  return Text(
-                    userNames,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey,
-                        ),
-                    softWrap: true,
+                  return Container(
+                    // width: 80,
+                    child: Text(
+                      userNames,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey,
+                          ),
+                      textAlign: TextAlign.right,
+                      softWrap: true,
+                    ),
                   );
                 },
               ),

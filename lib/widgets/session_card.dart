@@ -73,7 +73,7 @@ class SessionCard extends StatelessWidget {
                     Text(
                       description,
                       style: Theme.of(context).textTheme.bodySmall,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                 ],
