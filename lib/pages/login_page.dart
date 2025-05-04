@@ -109,6 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                   MyTextField(
                     controller: emailController,
                     hintText: 'Email',
+                    textInputType: TextInputType.emailAddress,
                     obscureText: false,
                   ),
 
@@ -118,6 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                   MyTextField(
                     controller: passwordController,
                     hintText: 'Password',
+                    textInputAction: TextInputAction.done,
                     obscureText: true,
                   ),
 
