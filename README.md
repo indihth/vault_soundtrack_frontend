@@ -1,11 +1,12 @@
 # Vault Soundtrack Frontend
 
-A Flutter application for managing and playing soundtracks.
+A collaborative playlist generation Android app designed to solve the challenge of group music selection. Using Spotify's Web API, it analyses multiple users listening data to create dynamic playlists that reflect everyone's musical tastes. Users can vote on suggested tracks, making the experience more interactive and democratic. Built with Flutter and Express.js, the app uses Firebase for real-time updates and user authentication, ensuring a smooth and engaging experience.
 
 ## Features
 
-- Play music tracks
+- Spotify connection
 - Create and manage playlists
+- Real-time voting
 - User authentication
 
 ## Setup
